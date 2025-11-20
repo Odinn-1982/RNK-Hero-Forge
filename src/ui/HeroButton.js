@@ -43,7 +43,14 @@ export async function renderHeroButtonForMessage(message, html) {
 
     new Dialog({
       title: `Use Hero Points — ${actor.name}`,
-      content: `<p>Hero Points available: ${maxAvailable}. Roll ${game.settings.get('ragnaroks-hero-forge', 'heroDie')} per point. How many to spend?</p><input id="hp-amt" type="number" min="1" max="${maxAvailable}" value="1" />`,
+      content: `
+        <p>Hero Points available: ${maxAvailable}. Roll ${game.settings.get('ragnaroks-hero-forge', 'heroDie')} per point. How many to spend?</p>
+        <input id="hp-amt" type="number" min="1" max="${maxAvailable}" value="1" />
+        <div style="margin-top:8px">
+          <label><input type="checkbox" id="opt-set-pending" checked/> Set pending bonus (applies to next roll)</label><br/>
+          <label><input type="checkbox" id="opt-post-chat" checked/> Post chat message for the bonus</label>
+        </div>
+      `,
       buttons: {
         ok: {
           label: "Use",
@@ -58,65 +65,70 @@ export async function renderHeroButtonForMessage(message, html) {
 
             const mode = game.settings.get('ragnaroks-hero-forge', 'heroMode') || 'roll';
             let bonus = 0;
+            let roll = null;
             if (mode === 'flat') {
               const per = game.settings.get('ragnaroks-hero-forge', 'flatPerPoint') || 2;
               bonus = per * amt;
             } else {
               const die = game.settings.get('ragnaroks-hero-forge', 'heroDie') || 6;
-              const roll = new Roll(`${amt}d${die}`);
+              roll = new Roll(`${amt}d${die}`);
               await roll.evaluate({async: false});
               bonus = roll.total;
             }
 
-            // Record pending bonus on actor so integrations (midiQOL etc.) can pick it up
-            try {
-              await HeroPoints.setPendingBonus(actor, bonus, { originMessageId: message.id, userId: game.user.id });
-            } catch (err) {
-              console.warn("RagNarok's Hero Forge | could not set pending bonus", err);
+            const setPending = dlg.find('#opt-set-pending').is(':checked');
+            const postChat = dlg.find('#opt-post-chat').is(':checked');
+
+            if (setPending) {
+              try {
+                await HeroPoints.setPendingBonus(actor, bonus, { originMessageId: message.id, userId: game.user.id });
+              } catch (err) {
+                console.warn("RagNarok's Hero Forge | could not set pending bonus", err);
+              }
             }
 
-            // Append a message describing the bonus and add a flag
-            // Render the chat template and create a chat message
-            try {
-              const speakerImg = actor?.img || null;
-              const content = await renderTemplate('templates/hero-spend-chat.hbs', {
-                speakerImg,
-                speakerName: actor.name,
-                points: amt,
-                isOne: amt === 1,
-                formula: roll ? roll.formula : null,
-                bonus
-              });
-              const chat = await ChatMessage.create({
-                speaker: message.data.speaker,
-                content,
-                type: CONST.CHAT_MESSAGE_TYPES.OTHER,
-                flags: {
-                  'ragnaroks-hero-forge': {
-                    heroBonus: bonus,
-                    heroSpent: amt,
-                    originMessageId: message.id
+            if (postChat) {
+              try {
+                const speakerImg = actor?.img || null;
+                const content = await renderTemplate('templates/hero-spend-chat.hbs', {
+                  speakerImg,
+                  speakerName: actor.name,
+                  actorId: actor.id,
+                  points: amt,
+                  isOne: amt === 1,
+                  formula: roll ? roll.formula : null,
+                  bonus
+                });
+                const chat = await ChatMessage.create({
+                  speaker: message.data.speaker,
+                  content,
+                  type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+                  flags: {
+                    'ragnaroks-hero-forge': {
+                      heroBonus: bonus,
+                      heroSpent: amt,
+                      originMessageId: message.id
+                    }
                   }
-                }
-              });
+                });
 
-              // Notify other modules via hook for integration
-              Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', {
-                message: chat,
-                actor,
-                points: amt,
-                bonus,
-              });
-            } catch (err) {
-              console.warn('RagNarok\'s Hero Forge | failed to create spend chat message', err);
+                Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', {
+                  message: chat,
+                  actor,
+                  points: amt,
+                  bonus,
+                });
+              } catch (err) {
+                console.warn('RagNarok\'s Hero Forge | failed to create spend chat message', err);
+              }
+            } else {
+              Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', { message: null, actor, points: amt, bonus });
             }
 
             // Optionally, try to update the original chat message total if it includes a roll
             try {
               const orig = message.getRoll();
               if (orig) {
-                // We cannot directly mutate the original Roll result, but we can create a new roll display.
-                // For now, add a visual badge to the original message
                 const badge = `<div class="ragnaroks-hero-attached">+${bonus} (hero)</div>`;
                 const msgHtml = message.data.content + badge;
                 await message.update({ content: msgHtml, flags: mergeObject(message.data.flags || {}, { 'ragnaroks-hero-forge': { lastBonus: bonus } }) });

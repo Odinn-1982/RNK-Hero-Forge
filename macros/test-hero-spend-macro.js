@@ -42,4 +42,16 @@
   const chat = await ChatMessage.create({ speaker: { actor: actor.id, alias: actor.name }, content, flags: { 'ragnaroks-hero-forge': { heroBonus: bonus, heroSpent: amt, origin: 'macro' } } });
   Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', { message: chat, actor, points: amt, bonus });
   ui.notifications.info(`Macro: ${actor.name} spent ${amt} hero point(s) and set pending bonus +${bonus}`);
+
+  // Optionally simulate midiQOL workflow hooks for testing integrations
+  const fakeWorkflow = {
+    actor: actor,
+    token: canvas.tokens.controlled[0] || null,
+    attackRoll: { total: 0 },
+    damageRoll: { total: 0 },
+    rolls: [],
+  };
+  console.log('RagNarok\'s Hero Forge | test macro calling midi-qol.preAttackRoll and midi-qol.preDamageRoll with fake workflow');
+  Hooks.callAll('midi-qol.preAttackRoll', fakeWorkflow);
+  Hooks.callAll('midi-qol.preDamageRoll', fakeWorkflow);
 })();

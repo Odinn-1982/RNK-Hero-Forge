@@ -9,7 +9,9 @@
   ],
   "styles": [
     "styles/hub.css",
-    "styles/button.css"
+    "styles/button.css",
+    "styles/chat.css",
+    "styles/sheet.css"
   ],
   "templates": [
     "templates/hub.hbs",

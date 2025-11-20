@@ -1,0 +1,11 @@
+{
+  "name": "ragnaroks-hero-forge",
+  "version": "0.1.0",
+  "description": "Foundry VTT module scaffold validation scripts",
+  "type": "module",
+  "scripts": {
+    "validate": "node ./tools/validate.js"
+  },
+  "author": "(You)",
+  "license": "MIT"
+}

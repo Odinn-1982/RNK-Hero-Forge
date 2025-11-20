@@ -125,6 +125,7 @@ export function registerActorTracker() {
                     const content = await renderTemplate('templates/hero-spend-chat.hbs', {
                       speakerImg,
                       speakerName: a.name,
+                      actorId: a.id,
                       points: amt,
                       isOne: amt === 1,
                       formula: formula || null,
