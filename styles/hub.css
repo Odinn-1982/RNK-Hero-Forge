@@ -1,0 +1,14 @@
+.hero-hub-theme {
+  background: #0b0b0b;
+  color: #eee;
+  font-family: Roboto, Arial, sans-serif;
+}
+.hero-hub h2 { color: #ff2b2b; margin: 8px 12px }
+.hub-legend { color: #bbb; margin: 0 12px 10px }
+.hero-table { width: 100%; border-collapse: collapse; margin: 10px 12px }
+.hero-table th, .hero-table td { padding: 8px 10px; border-bottom: 1px solid #222 }
+.hero-table tr:nth-child(odd) { background: #070707 }
+.hero-table tr:hover { background: #151515 }
+.actor-cell img { width: 28px; height: 28px; border-radius: 50%; margin-right: 8px; vertical-align: middle }
+.hp-add, .hp-spend, .hp-set-max { background: #ff2b2b; color: #fff; border: 0; padding: 6px 8px; margin-right:6px; border-radius:4px }
+.hp-add:hover, .hp-spend:hover, .hp-set-max:hover { background: #ff6666 }

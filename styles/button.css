@@ -1,0 +1,7 @@
+.ragnaroks-hero-button-wrapper { display:inline-block; margin-left:8px }
+.ragnaroks-use-hero { background: #c30000; color: #fff; border: 0; padding: 4px 8px; border-radius: 4px }
+.ragnaroks-use-hero:hover { background: #ff3333 }
+.ragnaroks-no-hero { color: #888; font-size: 0.85em }
+.ragnaroks-hero-bonus { margin-top:6px; padding:6px; background:#111; border-left:4px solid #c30000; color:#f1f1f1 }
+.ragnaroks-hero-attached { display:inline-block; margin-left:8px; padding:2px 6px; background:#2b0000; color:#fff; border-radius:4px }
+.ragnaroks-hero-button-wrapper.disabled .ragnaroks-use-hero { opacity:0.5; pointer-events:none }

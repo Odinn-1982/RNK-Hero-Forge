@@ -1,0 +1,24 @@
+{
+  "name": "ragnaroks-hero-forge",
+  "title": "RagNarok's Hero Forge",
+  "description": "Hero points manager: track, spend, and apply hero-point bonuses to rolls. Modular, themed GM/PC hub.",
+  "version": "0.1.0",
+  "author": "(You)",
+  "esmodules": [
+    "src/module.js"
+  ],
+  "styles": [
+    "styles/hub.css",
+    "styles/button.css"
+  ],
+  "templates": [
+    "templates/hub.hbs",
+    "templates/button.hbs"
+  ],
+  "manifest": "https://example.com/ragnaroks-hero-forge/manifest.json",
+  "download": "https://example.com/ragnaroks-hero-forge/download.zip",
+  "compatibleCoreVersion": "0.8.13",
+  "minimumCoreVersion": "0.8.0",
+  "url": "https://example.com/ragnaroks-hero-forge",
+  "readme": "README.md"
+}

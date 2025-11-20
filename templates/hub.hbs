@@ -1,0 +1,26 @@
+<div class="hero-hub">
+  <h2>RagNarok's Hero Forge</h2>
+  <div class="hub-legend">Black / Red theme · GM tools</div>
+  <table class="hero-table">
+    <thead>
+      <tr><th>Actor</th><th>Current</th><th>Max</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {{#each actors}}
+        <tr>
+          <td class="actor-cell"><img src="{{img}}"/> {{name}}</td>
+          <td>{{current}}</td>
+          <td>{{max}}</td>
+          <td>
+            <button class="hp-add" data-actor-id="{{id}}">+1</button>
+            <button class="hp-spend" data-actor-id="{{id}}">Spend</button>
+            <button class="hp-set-max" data-actor-id="{{id}}">Set Max</button>
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  <div style="margin:10px">
+    <button class="hp-grant-all">Grant configured amount to all players</button>
+  </div>
+</div>
