@@ -76,27 +76,40 @@ export async function renderHeroButtonForMessage(message, html) {
             }
 
             // Append a message describing the bonus and add a flag
-            const content = `<div class="ragnaroks-hero-bonus">${actor.name} spent ${amt} hero point(s) and rolled <strong>${roll.formula}</strong> = <strong>${bonus}</strong> bonus.</div>`;
-            await ChatMessage.create({
-              speaker: message.data.speaker,
-              content,
-              type: CONST.CHAT_MESSAGE_TYPES.OTHER,
-              flags: {
-                'ragnaroks-hero-forge': {
-                  heroBonus: bonus,
-                  heroSpent: amt,
-                  originMessageId: message.id
+            // Render the chat template and create a chat message
+            try {
+              const speakerImg = actor?.img || null;
+              const content = await renderTemplate('templates/hero-spend-chat.hbs', {
+                speakerImg,
+                speakerName: actor.name,
+                points: amt,
+                isOne: amt === 1,
+                formula: roll ? roll.formula : null,
+                bonus
+              });
+              const chat = await ChatMessage.create({
+                speaker: message.data.speaker,
+                content,
+                type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+                flags: {
+                  'ragnaroks-hero-forge': {
+                    heroBonus: bonus,
+                    heroSpent: amt,
+                    originMessageId: message.id
+                  }
                 }
-              }
-            });
+              });
 
-            // Notify other modules via hook for integration
-            Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', {
-              message,
-              actor,
-              points: amt,
-              bonus,
-            });
+              // Notify other modules via hook for integration
+              Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', {
+                message: chat,
+                actor,
+                points: amt,
+                bonus,
+              });
+            } catch (err) {
+              console.warn('RagNarok\'s Hero Forge | failed to create spend chat message', err);
+            }
 
             // Optionally, try to update the original chat message total if it includes a roll
             try {

@@ -1,0 +1,15 @@
+<div class="ragnaroks-hero-bonus-card">
+  <div class="ragnaroks-hero-card-header">
+    {{#if speakerImg}}
+      <img src="{{speakerImg}}" class="ragnaroks-hero-card-img" />
+    {{/if}}
+    <div class="ragnaroks-hero-card-title">{{speakerName}} spent {{points}} hero point{{#unless isOne}}s{{/unless}}</div>
+  </div>
+  <div class="ragnaroks-hero-card-body">
+    {{#if formula}}
+      <div>Rolled: <strong>{{formula}}</strong> = <strong>{{bonus}}</strong></div>
+    {{else}}
+      <div>Bonus: <strong>+{{bonus}}</strong></div>
+    {{/if}}
+  </div>
+</div>
