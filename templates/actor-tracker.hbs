@@ -1,0 +1,13 @@
+<div class="ragnaroks-actor-tracker">
+  <div class="ragnaroks-actor-tracker-inner">
+    <div class="ragnaroks-actor-name">{{name}}</div>
+    <div class="ragnaroks-actor-hp">Hero Points: <span class="hp-current">{{current}}</span>/<span class="hp-max">{{max}}</span></div>
+    <div class="ragnaroks-actor-controls">
+      {{#if canEdit}}
+        <button class="ragnaroks-hp-add" data-actor-id="{{actorId}}">+ Add</button>
+        <button class="ragnaroks-hp-spend" data-actor-id="{{actorId}}">Spend</button>
+        <button class="ragnaroks-hp-set-max" data-actor-id="{{actorId}}">Set Max</button>
+      {{/if}}
+    </div>
+  </div>
+</div>

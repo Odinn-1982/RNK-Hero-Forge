@@ -6,6 +6,7 @@ import { registerMidiQOLIntegration } from "./integrations/midiQOL.js";
 import { registerMATTIntegration } from "./integrations/matt.js";
 import { registerMATTAdapter } from "./integrations/mattAdapter.js";
 import "./levelup.js";
+import { registerActorTracker } from "./ui/ActorTracker.js";
 
 Hooks.once("init", async function () {
   console.log("RagNarok's Hero Forge | Initializing");
@@ -69,6 +70,7 @@ Hooks.once("ready", async function () {
     registerMidiQOLIntegration();
     registerMATTIntegration();
     registerMATTAdapter();
+    registerActorTracker();
   } catch (err) {
     console.warn("RagNarok's Hero Forge | midiQOL integration failed to initialize", err);
   }
