@@ -1,6 +1,9 @@
 .ragnaroks-actor-tracker { margin-top: 8px; display:flex; justify-content:flex-end; }
-.ragnaroks-actor-tracker-inner { background: linear-gradient(90deg,#0b0b0b,#150000); color:#fff; padding:6px 10px; border-radius:6px; display:flex; gap:10px; align-items:center; border:1px solid #330000 }
+.ragnaroks-actor-tracker-inner { background: linear-gradient(90deg,#0b0b0b,#150000); color:#fff; padding:6px 10px; border-radius:6px; display:flex; gap:12px; align-items:center; border:1px solid #330000 }
 .ragnaroks-actor-name { font-weight:600; color:#ff6666; margin-right:6px }
-.ragnaroks-actor-hp { font-size:0.95em }
+.ragnaroks-actor-hp-dots { display:flex; gap:6px; align-items:center }
+.hp-dot { width:12px; height:12px; border-radius:50%; display:inline-block; box-shadow:0 0 0 1px rgba(0,0,0,0.6) inset }
+.hp-dot.filled { background: #ff2b2b; border: 1px solid #440000 }
+.hp-dot.empty { background: #1a1a1a; border: 1px dashed #3a1a1a }
 .ragnaroks-actor-controls button { background:#c30000; color:#fff; border:0; padding:4px 6px; border-radius:4px; cursor:pointer }
 .ragnaroks-actor-controls button:hover { background:#ff3333 }
