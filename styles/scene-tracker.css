@@ -1,0 +1,114 @@
+.rnk-scene-tracker-window {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: #000;
+  color: #fff;
+}
+
+.rnk-scene-tracker-window * {
+  color: #fff;
+}
+
+.rnk-st-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rnk-st-header label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #ff0000;
+}
+
+.rnk-st-header select {
+  padding: 8px;
+  background: #000;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.rnk-st-header select:hover {
+  background: #1a1a1a;
+}
+
+.rnk-st-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  background: #0a0a0a;
+}
+
+.rnk-st-name {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #ff0000;
+}
+
+.rnk-st-points {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rnk-st-count {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.rnk-st-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rnk-st-controls button {
+  background: #ff0000;
+  color: #000;
+  border: 2px solid #fff;
+  padding: 10px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.rnk-st-controls button:hover {
+  background: #ffff00;
+  color: #000;
+  box-shadow: 0 0 8px #ffff00;
+}
+
+.rnk-st-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  text-align: center;
+  color: #fff;
+}
+
+.rnk-st-empty select {
+  padding: 8px;
+  background: #000;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.rnk-st-empty select:hover {
+  background: #1a1a1a;
+}

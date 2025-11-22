@@ -1,9 +1,19 @@
-.ragnaroks-actor-tracker { margin-top: 8px; display:flex; justify-content:flex-end; }
-.ragnaroks-actor-tracker-inner { background: linear-gradient(90deg,#0b0b0b,#150000); color:#fff; padding:6px 10px; border-radius:6px; display:flex; gap:12px; align-items:center; border:1px solid #330000 }
-.ragnaroks-actor-name { font-weight:600; color:#ff6666; margin-right:6px }
-.ragnaroks-actor-hp-dots { display:flex; gap:6px; align-items:center }
-.hp-dot { width:12px; height:12px; border-radius:50%; display:inline-block; box-shadow:0 0 0 1px rgba(0,0,0,0.6) inset }
-.hp-dot.filled { background: #ff2b2b; border: 1px solid #440000 }
-.hp-dot.empty { background: #1a1a1a; border: 1px dashed #3a1a1a }
-.ragnaroks-actor-controls button { background:#c30000; color:#fff; border:0; padding:4px 6px; border-radius:4px; cursor:pointer }
-.ragnaroks-actor-controls button:hover { background:#ff3333 }
+.rnk-actor-tracker { margin-top: 8px; display:flex; justify-content:flex-end; }
+.rnk-actor-tracker-inner { background: #000; color:#fff; padding:4px 8px; border-radius:6px; display:flex; gap:8px; align-items:center; border:2px solid #fff }
+.rnk-actor-tracker-inner * { color: #fff }
+.rnk-actor-name { font-weight:700; color:#ff0000; margin-right:4px; font-size:0.9rem; display: none; } /* Hidden to save space */
+.rnk-actor-hp-dots { display:flex; gap:4px; align-items:center }
+.hp-dot { width:10px; height:10px; border-radius:50%; display:inline-block; box-shadow:0 0 0 1px #fff inset }
+.hp-dot.filled { background: #ff0000; border: 1px solid #fff }
+.hp-dot.empty { background: #111; border: 1px solid #666 }
+.rnk-actor-controls { display: flex; flex-direction: row; gap: 4px; }
+.rnk-actor-controls button { background:#ff0000; color:#000; border:1px solid #fff; padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:700; font-size:0.75rem; line-height: 1.2; white-space: nowrap; }
+.rnk-actor-controls button:hover { background:#ffff00; color:#000 }
+
+.rnk-actor-tracker-area {
+	display:flex;
+	align-items:center;
+	justify-content:flex-end;
+	margin-left:auto;
+	gap:8px;
+}

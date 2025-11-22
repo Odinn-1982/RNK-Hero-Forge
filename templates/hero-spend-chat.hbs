@@ -1,15 +1,15 @@
-<div class="ragnaroks-hero-bonus-card">
-  <div class="ragnaroks-hero-card-header">
+<div class="rnk-hero-bonus-card">
+  <div class="rnk-hero-card-header">
     {{#if speakerImg}}
-      <a class="ragnaroks-hero-card-actor" data-actor-id="{{actorId}}"><img src="{{speakerImg}}" class="ragnaroks-hero-card-img" /></a>
+      <a class="rnk-hero-card-actor" data-actor-id="{{actorId}}"><img src="{{speakerImg}}" class="rnk-hero-card-img" onerror="this.onerror=null;this.src='icons/svg/mystery-man.svg'" /></a>
     {{/if}}
-    <div class="ragnaroks-hero-card-title">{{speakerName}} spent {{points}} hero point{{#unless isOne}}s{{/unless}}</div>
+    <div class="rnk-hero-card-title">{{speakerName}} spent {{points}} hero point{{#unless isOne}}s{{/unless}}</div>
   </div>
-  <div class="ragnaroks-hero-card-body">
+  <div class="rnk-hero-card-body">
     {{#if formula}}
-      <div>Rolled: <strong>{{formula}}</strong> = <strong>{{bonus}}</strong></div>
+      <div>{{localize "rnk-hero-forge.chat.rolled"}}: <strong>{{formula}}</strong> = <strong>{{bonus}}</strong></div>
     {{else}}
-      <div>Bonus: <strong>+{{bonus}}</strong></div>
+      <div>{{localize "rnk-hero-forge.chat.bonus"}}: <strong>+{{bonus}}</strong></div>
     {{/if}}
   </div>
 </div>

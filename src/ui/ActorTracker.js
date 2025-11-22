@@ -1,14 +1,48 @@
 import * as HeroPoints from "../heroPoints.js";
+import { logger } from '../logger.js';
+
+const TRACKER_ANCHOR_SELECTORS = [
+  "[data-rnk-hero-tracker-anchor]",
+  ".rnk-actor-tracker-anchor",
+  ".rnk-hero-tracker-anchor",
+  ".abilities-container-inner",
+  ".rows .bottom",
+];
+
+function insertTracker(html, trackerHtml) {
+  for (const selector of TRACKER_ANCHOR_SELECTORS) {
+    const anchor = html.find(selector);
+    if (anchor.length) {
+      const target = anchor.first().get(0);
+      if (!target) continue;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'rnk-actor-tracker-area';
+      wrapper.innerHTML = trackerHtml;
+      target.appendChild(wrapper);
+      return true;
+    }
+  }
+  const header = html.find(".sheet-header");
+  if (header.length) {
+    header.append(trackerHtml);
+    return true;
+  }
+  const body = html.find(".sheet-body");
+  if (body.length) {
+    body.prepend(trackerHtml);
+    return true;
+  }
+  return false;
+}
 
 export function registerActorTracker() {
-  // Insert a small hero point tracker into the 5e character sheet header
-  Hooks.on("renderActorSheet5eCharacter", async (app, html, data) => {
+  Hooks.on("renderActorSheet", async (app, html, data) => {
     try {
       const actor = app.actor;
       if (!actor) return;
 
       // Only show to GM or to players if enabled
-      const showForPlayers = game.settings.get('ragnaroks-hero-forge', 'enablePlayersHub');
+      const showForPlayers = game.settings.get('rnk-hero-forge', 'enablePlayersHub');
       if (!game.user.isGM && !showForPlayers && !actor.hasPlayerOwner) return;
 
       const hp = await HeroPoints.get(actor).catch(() => ({ max: 0, current: 0 }));
@@ -21,28 +55,31 @@ export function registerActorTracker() {
         points.push({ filled: i < current });
       }
 
-      const trackerHtml = await renderTemplate('templates/actor-tracker.hbs', {
+      const trackerHtml = await renderTemplate('modules/rnk-hero-forge/templates/actor-tracker.hbs', {
         actorId: actor.id,
         name: actor.name,
         current,
         max,
         points,
         isGM: game.user.isGM,
-        canEdit: game.user.isGM || actor.hasPlayerOwner
+        canManage: game.user.isGM,
+        canSpend: game.user.isGM || actor.isOwner
       });
 
-      // Put it into the sheet header area
-      const header = html.find('.sheet-header');
-      if (header.length) header.append(trackerHtml);
-      else html.find('.sheet-body').prepend(trackerHtml);
+      const inserted = insertTracker(html, trackerHtml);
+      if (!inserted) {
+        logger.warn("Could not insert actor tracker; no suitable anchor found.");
+        return;
+      }
 
       // Attach handlers
-      html.find('.ragnaroks-hp-add').click(async (ev) => {
+      html.find('.rnk-hp-add').click(async (ev) => {
         const id = $(ev.currentTarget).data('actor-id');
         const a = game.actors.get(id);
         if (!a) return;
         new Dialog({
-          title: `Add Hero Points — ${a.name}`,
+          title: game.i18n.format('rnk-hero-forge.dialog.addPoints.title', { name: a.name }),
+          classes: ["rnk-hero-dialog"],
           content: `<p>How many hero points to add?</p><input type="number" id="add-amt" min="1" value="1" />`,
           buttons: {
             ok: {
@@ -59,7 +96,7 @@ export function registerActorTracker() {
         }).render(true);
       });
 
-      html.find('.ragnaroks-hp-spend').click(async (ev) => {
+      html.find('.rnk-hp-spend').click(async (ev) => {
         const id = $(ev.currentTarget).data('actor-id');
         const a = game.actors.get(id);
         if (!a) return;
@@ -68,20 +105,61 @@ export function registerActorTracker() {
         if (maxSpend <= 0) return ui.notifications.warn(`${a.name} has no hero points`);
 
         new Dialog({
-          title: `Spend Hero Points — ${a.name}`,
+          title: game.i18n.format('rnk-hero-forge.dialog.spendPoints.title', { name: a.name }),
+          classes: ["rnk-hero-dialog"],
           content: `
-            <p>Hero Points available: ${maxSpend}. How many to spend?</p>
-            <input id="hp-amt" type="number" min="1" max="${maxSpend}" value="1" />
-            <div style="margin-top:8px">
-              <label><input type="checkbox" id="opt-set-pending" checked/> Set pending bonus (applies to next roll)</label><br/>
-              <label><input type="checkbox" id="opt-post-chat" checked/> Post chat message for the bonus</label>
-            </div>
+            <form class="rnk-hero-spend-form hero-hub-theme">
+              <div class="spend-header">
+                <div class="spend-hero-identity">
+                  <span class="spend-hero-name">${a.name}</span>
+                  <div class="spend-hero-balance" title="Available Hero Points">
+                    <i class="fas fa-bolt"></i> ${maxSpend}
+                  </div>
+                </div>
+                <div class="spend-helper">Spend points for a bonus</div>
+              </div>
+
+              <div class="spend-body">
+                <div class="spend-row">
+                  <label for="hp-amt">Spend Amount</label>
+                  <div class="spend-input-wrapper">
+                    <input id="hp-amt" type="number" min="1" max="${maxSpend}" value="1" />
+                  </div>
+                </div>
+
+                <div class="spend-footer">
+                  <label class="spend-checkbox">
+                    <input type="checkbox" id="opt-set-pending" checked/>
+                    <span>Set pending bonus (next roll)</span>
+                  </label>
+                  <label class="spend-checkbox">
+                    <input type="checkbox" id="opt-post-chat" checked/>
+                    <span>Post chat message</span>
+                  </label>
+                </div>
+              </div>
+            </form>
           `,
           buttons: {
             ok: {
-              label: "Spend",
+              label: `<i class="fas fa-bolt"></i> Spend`,
               callback: async (dlg) => {
-                const amt = parseInt(dlg.find('#hp-amt').val(), 10) || 0;
+                const rootEl = dlg instanceof HTMLElement ? dlg : dlg?.[0] || null;
+                const readInputValue = (selector) => {
+                  if (typeof dlg?.find === "function") {
+                    const jq = dlg.find(selector);
+                    if (jq?.length) return { value: jq.val(), checked: jq.is(":checked") };
+                  }
+                  const el = rootEl?.querySelector?.(selector) || null;
+                  if (!el) return { value: null, checked: false };
+                  if (el instanceof HTMLInputElement) {
+                    return { value: el.value, checked: el.checked };
+                  }
+                  return { value: null, checked: false };
+                };
+
+                const amtData = readInputValue('#hp-amt');
+                const amt = parseInt(amtData.value, 10) || 0;
                 if (amt <= 0) return;
                 try {
                   await HeroPoints.spend(a, amt);
@@ -90,30 +168,23 @@ export function registerActorTracker() {
                 }
 
                 // Compute bonus according to settings, set pending bonus, and post a chat message
-                const mode = game.settings.get('ragnaroks-hero-forge', 'heroMode') || 'roll';
-                let bonus = 0;
-                let formula = null;
-                if (mode === 'flat') {
-                  const per = game.settings.get('ragnaroks-hero-forge', 'flatPerPoint') || 2;
-                  bonus = per * amt;
-                  formula = `${amt} x ${per}`;
-                } else {
-                  const die = game.settings.get('ragnaroks-hero-forge', 'heroDie') || 6;
-                  const roll = new Roll(`${amt}d${die}`);
-                  await roll.evaluate({async: false});
-                  bonus = roll.total;
-                  formula = roll.formula;
-                }
+                const { bonus, formula } = await HeroPoints.computeHeroBonus(amt);
 
                 // Read options
-                const setPending = dlg.find('#opt-set-pending').is(':checked');
-                const postChat = dlg.find('#opt-post-chat').is(':checked');
+                const setPending = readInputValue('#opt-set-pending').checked;
+                const postChat = readInputValue('#opt-post-chat').checked;
 
                 if (setPending) {
                   try {
-                    await HeroPoints.setPendingBonus(a, bonus, { source: 'sheet', userId: game.user.id });
+                    await HeroPoints.setPendingBonus(a, bonus, {
+                      source: 'sheet',
+                      userId: game.user.id,
+                      points: amt,
+                      formula,
+                      postChat,
+                    });
                   } catch (err) {
-                    console.warn('RagNarok\'s Hero Forge | could not set pending bonus from sheet', err);
+                    logger.warn('could not set pending bonus from sheet', err);
                   }
                 }
 
@@ -122,7 +193,7 @@ export function registerActorTracker() {
                 if (postChat) {
                   try {
                     const speakerImg = a?.img || null;
-                    const content = await renderTemplate('templates/hero-spend-chat.hbs', {
+                    const content = await renderTemplate('modules/rnk-hero-forge/templates/hero-spend-chat.hbs', {
                       speakerImg,
                       speakerName: a.name,
                       actorId: a.id,
@@ -134,27 +205,28 @@ export function registerActorTracker() {
                     chat = await ChatMessage.create({
                       speaker: { actor: a.id, alias: a.name },
                       content,
-                      type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+                      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
                       flags: {
-                        'ragnaroks-hero-forge': {
+                        'rnk-hero-forge': {
                           heroBonus: bonus,
                           heroSpent: amt,
+                          heroFormula: formula,
                           origin: 'sheet'
                         }
                       }
                     });
 
                     // Notify other modules/integrations
-                    Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', { message: chat, actor: a, points: amt, bonus });
+                    Hooks.callAll('rnk-hero-forge.applyHeroBonus', { message: chat, actor: a, points: amt, bonus });
                   } catch (err) {
-                    console.warn('RagNarok\'s Hero Forge | could not create chat message for hero spend', err);
+                    logger.warn('could not create chat message for hero spend', err);
                   }
                 } else {
                   // Still notify integrations if setPending was used
-                  Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', { message: chat, actor: a, points: amt, bonus });
+                  Hooks.callAll('rnk-hero-forge.applyHeroBonus', { message: chat, actor: a, points: amt, bonus });
                 }
 
-                ui.notifications.info(`${a.name} spent ${amt} hero point(s)${setPending ? ` and set a pending bonus of +${bonus}` : ''}`);
+                ui.notifications.info(game.i18n.format('rnk-hero-forge.notification.spendSuccess', { name: a.name, points: amt, bonus }));
                 app.render();
               }
             },
@@ -163,13 +235,14 @@ export function registerActorTracker() {
         }).render(true);
       });
 
-      html.find('.ragnaroks-hp-set-max').click(async (ev) => {
+      html.find('.rnk-hp-set-max').click(async (ev) => {
         const id = $(ev.currentTarget).data('actor-id');
         const a = game.actors.get(id);
         if (!a) return;
         new Dialog({
-          title: `Set Max Hero Points — ${a.name}`,
-          content: `<p>Enter new max:</p><input id="hp-max" type="number" min="0" value="${game.settings.get('ragnaroks-hero-forge','defaultMax') || 3}" />`,
+          title: game.i18n.format('rnk-hero-forge.dialog.setMax.title', { name: a.name }),
+          classes: ["rnk-hero-dialog"],
+          content: `<p>Enter new max:</p><input id="hp-max" type="number" min="0" value="${game.settings.get('rnk-hero-forge','defaultMax') || 3}" />`,
           buttons: {
             ok: {
               label: "Set",
@@ -185,7 +258,7 @@ export function registerActorTracker() {
       });
 
     } catch (err) {
-      console.warn("RagNarok's Hero Forge | ActorTracker error", err);
+      logger.warn("ActorTracker error", err);
     }
   });
 }

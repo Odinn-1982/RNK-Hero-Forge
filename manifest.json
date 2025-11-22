@@ -1,0 +1,16 @@
+{
+  "id": "rnk-hero-forge",
+  "title": "RNK Hero Forge",
+  "description": "Hero points manager: track, spend, and apply hero-point bonuses to rolls.",
+  "version": "0.1.1",
+  "author": "Your Name",
+  "license": "MIT",
+  "homepage": "https://github.com/<github-username>/rnk-hero-forge",
+  "download": "https://github.com/<github-username>/rnk-hero-forge/releases/download/v0.1.1/rnk-hero-forge.zip",
+  "manifest": "https://raw.githubusercontent.com/<github-username>/rnk-hero-forge/main/manifest.json",
+  "readme": "https://raw.githubusercontent.com/<github-username>/rnk-hero-forge/main/README.md",
+  "compatibility": {
+    "minimum": "0.8.0",
+    "verified": "0.8.13"
+  }
+}

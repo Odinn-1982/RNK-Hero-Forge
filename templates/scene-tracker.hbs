@@ -1,0 +1,41 @@
+<div class="rnk-scene-tracker-window">
+  {{#if hasActor}}
+    <div class="rnk-st-header">
+      <label>Select Actor:</label>
+      <select class="rnk-actor-select" data-action="changeActor">
+        {{#each (game.actors.contents)}}
+          <option value="{{id}}" {{#if (eq id @root.actorId)}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <div class="rnk-st-info">
+      <div class="rnk-st-name">{{actorName}}</div>
+      <div class="rnk-st-points">
+        {{#each points}}
+          <span class="hp-dot {{#if filled}}filled{{else}}empty{{/if}}" title="{{#if filled}}Hero Point{{else}}Empty{{/if}}"></span>
+        {{/each}}
+      </div>
+      <div class="rnk-st-count">{{current}} / {{max}}</div>
+    </div>
+
+    {{#if canEdit}}
+      <div class="rnk-st-controls">
+        <button class="rnk-hp-add-scene" data-action="addPoints">+ Add</button>
+        <button class="rnk-hp-spend-scene" data-action="spendPoints">Spend</button>
+        <button class="rnk-hp-set-max-scene" data-action="setMax">Set Max</button>
+      </div>
+    {{/if}}
+  {{else}}
+    <div class="rnk-st-empty">
+      <p>No actor selected</p>
+      <label>Select Actor:</label>
+      <select class="rnk-actor-select" data-action="changeActor">
+        <option value="">-- Choose Actor --</option>
+        {{#each (game.actors.contents)}}
+          <option value="{{id}}">{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+  {{/if}}
+</div>

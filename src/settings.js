@@ -1,5 +1,7 @@
+import { DEFAULT_THEME_PRESET, THEME_SLOTS, applyCurrentTheme, getThemePresetChoices, getDefaultColorForSlot } from "./theme.js";
+
 export function registerSettings() {
-  const mod = "ragnaroks-hero-forge";
+  const mod = "rnk-hero-forge";
   game.settings.register(mod, "defaultMax", {
     name: "Default Max Hero Points",
     hint: "Default maximum hero points each player gets when assigned or leveled up.",
@@ -72,4 +74,38 @@ export function registerSettings() {
     type: Boolean,
     default: true,
   });
+
+  game.settings.register(mod, 'enableDebug', {
+    name: 'Enable Debug Logging',
+    hint: 'Toggle debug logging for the module (console logs). Set to true for development or troubleshooting.',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+  });
+
+  const presetChoices = getThemePresetChoices();
+  game.settings.register(mod, "hubThemePreset", {
+    name: "Hero Hub Theme Preset",
+    hint: "Choose a color preset for the Hero Hub. Select 'Custom' to use the individual color fields below.",
+    scope: "client",
+    config: true,
+    type: String,
+    choices: presetChoices,
+    default: DEFAULT_THEME_PRESET,
+    onChange: () => applyCurrentTheme(),
+  });
+
+  for (const slot of THEME_SLOTS) {
+    const defaultValue = getDefaultColorForSlot(slot.key);
+    game.settings.register(mod, slot.setting, {
+      name: `Hero Hub Color: ${slot.label}`,
+      hint: "Only used when the preset is set to Custom. Accepts any valid CSS color value (e.g. #ff6600, rgb(34,139,34), rgba(0,0,0,0.5)).",
+      scope: "client",
+      config: true,
+      type: String,
+      default: defaultValue,
+      onChange: () => applyCurrentTheme(),
+    });
+  }
 }

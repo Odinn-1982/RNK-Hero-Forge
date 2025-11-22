@@ -1,150 +1,217 @@
 import * as HeroPoints from "../heroPoints.js";
+import { logger } from '../logger.js';
 
 export async function renderHeroButtonForMessage(message, html) {
   // Only show for messages with rolls
-  if (!message.data.flags?.core?.roll) {
+  if (!message.flags?.core?.roll) {
     // Fallback: check for rolls array
     if (!message.isRoll) return;
   }
 
-  // Only show to message author or GM
-  const isAuthor = message.user?.id === game.user.id;
-  const isGM = game.user.isGM;
-  if (!isAuthor && !isGM) return;
+  // Only show to users who own the actor (GM counts as owner)
+  if (!actor?.isOwner) return;
 
   // Determine the actor that issued the roll (if any)
-  const speaker = message.data.speaker || {};
+  const speaker = message.speaker || {};
   const actor = game.actors.get(speaker.actor) || null;
-  if (!actor && !isGM) return;
+  // Only render the hero button for messages linked to actor documents (do not show the button for actor-less messages)
+  if (!actor) return;
 
   const hp = actor ? await HeroPoints.get(actor) : null;
   const hasPoints = !!(hp && hp.current > 0);
+  const heroMode = game.settings.get('rnk-hero-forge', 'heroMode') || 'roll';
+  const rollHelp = heroMode === 'flat'
+    ? `Flat bonus: ${(game.settings.get('rnk-hero-forge', 'flatPerPoint') || 2)} per point.`
+    : 'Bonus dice: 1 point -> 1d3, 2 points -> +1d4, 3+ points -> +1d6 each.';
 
-  const buttonHtml = await renderTemplate("templates/button.hbs", {
+  const buttonHtml = await foundry.applications.handlebars.renderTemplate("modules/rnk-hero-forge/templates/button.hbs", {
     hasPoints,
     current: hp ? hp.current : 0,
     max: hp ? hp.max : 0,
   });
 
-  // Append button area to the message controls
-  const controls = html.find('.message-controls');
-  if (controls.length === 0) {
-    // insert at end of message
-    html.append(`<div class="ragnaroks-hero-btn">${buttonHtml}</div>`);
-  } else {
-    controls.append(buttonHtml);
-  }
+  // Remove any existing hero button for this message before inserting a fresh one
+  html.querySelectorAll('.rnk-hero-btn').forEach((node) => node.remove());
+
+  const buttonWrapper = document.createElement('div');
+  buttonWrapper.className = 'rnk-hero-btn';
+  buttonWrapper.innerHTML = buttonHtml;
+
+  const contentArea = html.querySelector('.message-content') || html;
+  contentArea.appendChild(buttonWrapper);
 
   // Attach click handler
-  html.find('.ragnaroks-use-hero').click(async (ev) => {
-    const maxAvailable = hp?.current || 0;
-    if (!actor) return ui.notifications.warn("No actor associated with this roll");
-    if (maxAvailable <= 0) return ui.notifications.warn("No hero points available");
+  const button = buttonWrapper.querySelector('.rnk-use-hero');
+  if (button) {
+    button.addEventListener('click', async (ev) => {
+      ev.preventDefault();
+      
+      // Re-fetch current HP to ensure we have latest data
+      const currentHp = await HeroPoints.get(actor);
+      const maxAvailable = currentHp?.current || 0;
+      if (!actor) return ui.notifications.warn("No actor associated with this roll");
+      if (maxAvailable <= 0) return ui.notifications.warn(game.i18n.localize('rnk-hero-forge.notification.noHero'));
 
-    new Dialog({
-      title: `Use Hero Points — ${actor.name}`,
-      content: `
-        <p>Hero Points available: ${maxAvailable}. Roll ${game.settings.get('ragnaroks-hero-forge', 'heroDie')} per point. How many to spend?</p>
-        <input id="hp-amt" type="number" min="1" max="${maxAvailable}" value="1" />
-        <div style="margin-top:8px">
-          <label><input type="checkbox" id="opt-set-pending" checked/> Set pending bonus (applies to next roll)</label><br/>
-          <label><input type="checkbox" id="opt-post-chat" checked/> Post chat message for the bonus</label>
-        </div>
-      `,
-      buttons: {
-        ok: {
-          label: "Use",
-          callback: async (dlg) => {
-            const amt = parseInt(dlg.find('#hp-amt').val(), 10) || 0;
-            if (amt <= 0) return;
-            try {
-              await HeroPoints.spend(actor, amt);
-            } catch (err) {
-              return ui.notifications.error(err.message);
-            }
+      new Dialog({
+        title: `Use Hero Points: ${actor.name}`,
+        classes: ["rnk-hero-dialog"],
+        content: `
+          <form class="rnk-hero-spend-form hero-hub-theme">
+            <div class="spend-header">
+              <div class="spend-hero-identity">
+                <span class="spend-hero-name">${actor.name}</span>
+                <div class="spend-hero-balance" title="Available Hero Points">
+                  <i class="fas fa-bolt"></i> ${maxAvailable}
+                </div>
+              </div>
+              <div class="spend-helper">${rollHelp}</div>
+            </div>
 
-            const mode = game.settings.get('ragnaroks-hero-forge', 'heroMode') || 'roll';
-            let bonus = 0;
-            let roll = null;
-            if (mode === 'flat') {
-              const per = game.settings.get('ragnaroks-hero-forge', 'flatPerPoint') || 2;
-              bonus = per * amt;
-            } else {
-              const die = game.settings.get('ragnaroks-hero-forge', 'heroDie') || 6;
-              roll = new Roll(`${amt}d${die}`);
-              await roll.evaluate({async: false});
-              bonus = roll.total;
-            }
+            <div class="spend-body">
+              <div class="spend-row">
+                <label for="hp-amt">Spend Amount</label>
+                <div class="spend-input-wrapper">
+                  <input id="hp-amt" type="number" min="1" max="${maxAvailable}" value="1" />
+                </div>
+              </div>
 
-            const setPending = dlg.find('#opt-set-pending').is(':checked');
-            const postChat = dlg.find('#opt-post-chat').is(':checked');
+              <div class="spend-footer">
+                <label class="spend-checkbox">
+                  <input type="checkbox" id="opt-set-pending" checked/>
+                  <span>Set pending bonus (next roll)</span>
+                </label>
+                <label class="spend-checkbox">
+                  <input type="checkbox" id="opt-post-chat" checked/>
+                  <span>Post chat message</span>
+                </label>
+              </div>
+            </div>
+          </form>
+        `,
+        buttons: {
+          ok: {
+            label: `<i class="fas fa-bolt"></i> Use Points`,
+            callback: async (html) => {
+              const rootEl = html instanceof HTMLElement ? html : html?.[0] || null;
+              const readInputValue = (selector) => {
+                if (typeof html?.find === "function") {
+                  const jq = html.find(selector);
+                  if (jq?.length) return { value: jq.val(), checked: jq.is(":checked") };
+                }
+                const el = rootEl?.querySelector?.(selector) || null;
+                if (!el) return { value: null, checked: false };
+                if (el instanceof HTMLInputElement) {
+                  return { value: el.value, checked: el.checked };
+                }
+                return { value: null, checked: false };
+              };
 
-            if (setPending) {
+              const amtData = readInputValue('#hp-amt');
+              const amt = parseInt(amtData.value, 10) || 0;
+              if (amt <= 0) return;
+              
               try {
-                await HeroPoints.setPendingBonus(actor, bonus, { originMessageId: message.id, userId: game.user.id });
+                await HeroPoints.spend(actor, amt);
               } catch (err) {
-                console.warn("RagNarok's Hero Forge | could not set pending bonus", err);
+                return ui.notifications.error(err.message);
               }
-            }
 
-            if (postChat) {
-              try {
-                const speakerImg = actor?.img || null;
-                const content = await renderTemplate('templates/hero-spend-chat.hbs', {
-                  speakerImg,
-                  speakerName: actor.name,
-                  actorId: actor.id,
-                  points: amt,
-                  isOne: amt === 1,
-                  formula: roll ? roll.formula : null,
-                  bonus
-                });
-                const chat = await ChatMessage.create({
-                  speaker: message.data.speaker,
-                  content,
-                  type: CONST.CHAT_MESSAGE_TYPES.OTHER,
-                  flags: {
-                    'ragnaroks-hero-forge': {
-                      heroBonus: bonus,
-                      heroSpent: amt,
-                      originMessageId: message.id
-                    }
+              const { bonus, formula } = await HeroPoints.computeHeroBonus(amt);
+
+              const setPending = readInputValue('#opt-set-pending').checked || false;
+              const postChat = readInputValue('#opt-post-chat').checked || false;
+
+              if (setPending) {
+                try {
+                  await HeroPoints.setPendingBonus(actor, bonus, {
+                    originMessageId: message.id,
+                    userId: game.user.id,
+                    points: amt,
+                    formula,
+                    postChat,
+                  });
+                } catch (err) {
+                  logger.warn("could not set pending bonus", err);
+                }
+              }
+
+              if (postChat) {
+                try {
+                  function extractImageUrl(value) {
+                    if (!value || typeof value !== 'string') return null;
+                    const s = value.trim();
+                    // If the field contains an <img ... /> HTML, extract src attribute
+                    const imgMatch = s.match(/<img\s+[^>]*src\s*=\s*(['\"])(.*?)\1/i);
+                    if (imgMatch && imgMatch[2]) return imgMatch[2];
+                    const imgMatch2 = s.match(/<img\s+[^>]*src\s*=\s*([^\s'>]+)/i);
+                    if (imgMatch2 && imgMatch2[1]) return imgMatch2[1];
+                    // fallback: if it appears to be a URL or path to an image
+                    if (/\.(png|jpg|jpeg|svg|webp|gif|bmp)(\?.*)?$/i.test(s)) return s.replace(/["'<>]/g, '');
+                    // remove angle brackets and quotes if present
+                    const cleaned = s.replace(/[<>"']/g, '');
+                    if (cleaned.includes('/') || cleaned.includes(':')) return cleaned;
+                    return null;
                   }
-                });
+                  const rawSpeakerImg = actor?.prototypeToken?.texture?.src || actor?.img || 'icons/svg/mystery-man.svg';
+                  const speakerImg = extractImageUrl(rawSpeakerImg) || 'icons/svg/mystery-man.svg';
+                  if (!extractImageUrl(rawSpeakerImg) && rawSpeakerImg) logger.warn('Speaker image not valid or parseable', { actor: actor?.name, rawSpeakerImg });
+                  const content = await foundry.applications.handlebars.renderTemplate('modules/rnk-hero-forge/templates/hero-spend-chat.hbs', {
+                    speakerImg,
+                    speakerName: actor.name,
+                    actorId: actor.id,
+                    points: amt,
+                    isOne: amt === 1,
+                    formula,
+                    bonus
+                  });
+                  const chat = await ChatMessage.create({
+                    speaker: message.speaker,
+                    content,
+                    style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+                    flags: {
+                      'rnk-hero-forge': {
+                        heroBonus: bonus,
+                        heroSpent: amt,
+                        heroFormula: formula,
+                        originMessageId: message.id
+                      }
+                    }
+                  });
 
-                Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', {
-                  message: chat,
-                  actor,
-                  points: amt,
-                  bonus,
-                });
+                  Hooks.callAll('rnk-hero-forge.applyHeroBonus', {
+                    message: chat,
+                    actor,
+                    points: amt,
+                    bonus,
+                  });
+                } catch (err) {
+                  logger.warn('failed to create spend chat message', err);
+                }
+              } else {
+                Hooks.callAll('rnk-hero-forge.applyHeroBonus', { message: null, actor, points: amt, bonus });
+              }
+
+              // Optionally, try to update the original chat message total if it includes a roll
+              try {
+                const orig = message.getRoll();
+                if (orig) {
+                  const badge = `<div class="rnk-hero-attached">+${bonus} (hero)</div>`;
+                  const msgHtml = message.content + badge;
+                  await message.update({ content: msgHtml, flags: foundry.utils.mergeObject(message.flags || {}, { 'rnk-hero-forge': { lastBonus: bonus } }) });
+                }
               } catch (err) {
-                console.warn('RagNarok\'s Hero Forge | failed to create spend chat message', err);
+                // ignore
               }
-            } else {
-              Hooks.callAll('ragnaroks-hero-forge.applyHeroBonus', { message: null, actor, points: amt, bonus });
-            }
 
-            // Optionally, try to update the original chat message total if it includes a roll
-            try {
-              const orig = message.getRoll();
-              if (orig) {
-                const badge = `<div class="ragnaroks-hero-attached">+${bonus} (hero)</div>`;
-                const msgHtml = message.data.content + badge;
-                await message.update({ content: msgHtml, flags: mergeObject(message.data.flags || {}, { 'ragnaroks-hero-forge': { lastBonus: bonus } }) });
-              }
-            } catch (err) {
-              // ignore
+              ui.notifications.info(game.i18n.format('rnk-hero-forge.notification.spendSuccess', { name: actor.name, points: amt, bonus }));
             }
-
-            ui.notifications.info(`${actor.name} gained +${bonus} from hero points`);
-          }
-        },
-        cancel: { label: "Cancel" }
-      }
-    }).render(true);
-  });
+          },
+          cancel: { label: "Cancel" }
+        }
+      }).render(true);
+    });
+  }
 
   // Remove button if actor has no points (visual)
-  if (!hasPoints) html.find('.ragnaroks-hero-button-wrapper').addClass('disabled');
+  if (!hasPoints) html.querySelector('.rnk-hero-button-wrapper')?.classList.add('disabled');
 }

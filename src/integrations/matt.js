@@ -1,4 +1,5 @@
 import * as HeroPoints from "../heroPoints.js";
+import { logger } from '../logger.js';
 
 export function registerMATTIntegration() {
   if (!game.modules.get("matt")?.active && !game.modules.get("monk-tokenbar")?.active) return;
@@ -32,18 +33,18 @@ export function registerMATTIntegration() {
         const pending = await HeroPoints.getPendingBonus(a);
         if (!pending) return;
         // Forward to a MATT-specific hook so module adapters can apply it
-        Hooks.callAll("ragnaroks-hero-forge.mattApplyBonus", { actor: a, pending, payload, originalHook: hookName });
+        Hooks.callAll("rnk-hero-forge.mattApplyBonus", { actor: a, pending, payload, originalHook: hookName });
         // Optionally clear the pending bonus; leave option configurable later
         await HeroPoints.clearPendingBonus(a);
-        ui.notifications.info(`${a.name} receives +${pending.bonus} (hero) for trap interaction`);
+        ui.notifications.info(game.i18n.format('rnk-hero-forge.notification.applied', { name: a.name, bonus: pending.bonus, label: 'trap' }));
       } catch (err) {
-        console.warn("RagNarok's Hero Forge | MATT hook handler error", err);
+        logger.warn("MATT hook handler error", err);
       }
     });
   });
 
   // Forward our generic applyHeroBonus event to MATT consumers as well
-  Hooks.on('ragnaroks-hero-forge.applyHeroBonus', (payload) => {
-    Hooks.callAll('ragnaroks-hero-forge.mattApplyBonus', Object.assign({ originalHook: 'applyHeroBonus' }, payload));
+  Hooks.on('rnk-hero-forge.applyHeroBonus', (payload) => {
+    Hooks.callAll('rnk-hero-forge.mattApplyBonus', Object.assign({ originalHook: 'applyHeroBonus' }, payload));
   });
 }

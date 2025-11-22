@@ -1,4 +1,5 @@
 import * as HeroPoints from "../heroPoints.js";
+import { logger } from '../logger.js';
 
 export function registerMidiQOLIntegration() {
   // Only register if midi-qol is present
@@ -49,7 +50,7 @@ export function registerMidiQOLIntegration() {
       // Not applied
       return false;
     } catch (err) {
-      console.warn("RagNarok's Hero Forge | error applying pending bonus", err);
+      logger.warn("error applying pending bonus", err);
       return false;
     }
   };
@@ -60,7 +61,7 @@ export function registerMidiQOLIntegration() {
       const actor = workflow?.actor?.actor ?? workflow?.actor ?? workflow?.token?.actor ?? null;
       if (actor) {
         await HeroPoints.clearPendingBonus(actor);
-        ui.notifications.info(`${actor.name} receives hero bonus applied to attack`);
+        ui.notifications.info(game.i18n.format('rnk-hero-forge.notification.applied', { name: actor.name, bonus: 0, label: 'attack' }));
       }
     }
   });
@@ -71,7 +72,7 @@ export function registerMidiQOLIntegration() {
       const actor = workflow?.actor?.actor ?? workflow?.actor ?? workflow?.token?.actor ?? null;
       if (actor) {
         await HeroPoints.clearPendingBonus(actor);
-        ui.notifications.info(`${actor.name} receives hero bonus applied to damage`);
+        ui.notifications.info(game.i18n.format('rnk-hero-forge.notification.applied', { name: actor.name, bonus: 0, label: 'damage' }));
       }
     }
   });

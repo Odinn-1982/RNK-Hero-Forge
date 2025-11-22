@@ -5,25 +5,58 @@ import { renderHeroButtonForMessage } from "./ui/HeroButton.js";
 import { registerMidiQOLIntegration } from "./integrations/midiQOL.js";
 import { registerMATTIntegration } from "./integrations/matt.js";
 import { registerMATTAdapter } from "./integrations/mattAdapter.js";
+import { registerCoreRollIntegration } from "./integrations/core-rolls.js";
 import "./levelup.js";
 import { registerActorTracker } from "./ui/ActorTracker.js";
+import { registerSceneTrackerUI } from "./ui/SceneTrackerUI.js";
+import { applyCurrentTheme } from "./theme.js";
+import { registerHeroSpendOverlay } from "./ui/HeroSpendOverlay.js";
+import { logger } from './logger.js';
 
 Hooks.once("init", async function () {
-  console.log("RagNarok's Hero Forge | Initializing");
+  logger.log("Initializing");
   registerSettings();
   // Preload templates
-  await loadTemplates([
-    "templates/hub.hbs",
-    "templates/button.hbs",
+  await foundry.applications.handlebars.loadTemplates([
+    "modules/rnk-hero-forge/templates/hub.hbs",
+    "modules/rnk-hero-forge/templates/button.hbs",
+    "modules/rnk-hero-forge/templates/hero-spend-chat.hbs",
+    "modules/rnk-hero-forge/templates/actor-tracker.hbs",
+    "modules/rnk-hero-forge/templates/scene-tracker.hbs",
   ]);
 });
 
 Hooks.once("ready", async function () {
-  console.log("RagNarok's Hero Forge | Ready");
+  logger.log("Ready");
+
+  applyCurrentTheme();
+
+  // Warn if module metadata still contains placeholder values
+  try {
+    const response = await fetch('modules/rnk-hero-forge/module.json');
+    if (response.ok) {
+      const moduleRaw = await response.json();
+      const hasPlaceholder = (s) => typeof s === 'string' && (s.includes('<github-username>') || s.includes('example.com') || s.includes('Your Name') || s.includes('you@example.com'));
+      const placeholders = [];
+      if (hasPlaceholder(moduleRaw.manifest)) placeholders.push('module.json.manifest');
+      if (hasPlaceholder(moduleRaw.download)) placeholders.push('module.json.download');
+      if (Array.isArray(moduleRaw.authors)) {
+        for (const a of moduleRaw.authors) {
+          if (hasPlaceholder(a?.name) || hasPlaceholder(a?.email)) placeholders.push('module.json.authors');
+        }
+      }
+      if (placeholders.length) {
+        logger.warn('Detected placeholder metadata in module.json:', placeholders.join(', '));
+        ui.notifications?.warn?.('RNK Hero Forge contains placeholder metadata. Run tools/prepare-release.js before publishing.');
+      }
+    }
+  } catch (err) {
+    // non-fatal, fetch may be blocked in some contexts
+  }
 
   // Add a sidebar button
-  const button = new Application({
-    id: "ragnaroks-hero-hub-btn",
+    const button = new Application({
+      id: "rnk-hero-hub-btn",
     title: "Hero Forge",
     template: null,
   });
@@ -33,17 +66,17 @@ Hooks.once("ready", async function () {
     // Add under token controls for convenience
     controls.push({
       name: "hero-forge",
-      title: "RagNarok's Hero Forge",
+      title: "RNK Hero Forge",
       icon: "fas fa-hammer",
-      visible: game.user.isGM || game.settings.get("ragnaroks-hero-forge", "enablePlayersHub"),
-      layer: "layer",
+      visible: game.user.isGM || game.settings.get("rnk-hero-forge", "enablePlayersHub"),
+      layer: "token",
       tools: [
         {
           name: "open-hub",
           title: "Open Hero Hub",
           icon: "fas fa-fire",
           onClick: () => {
-            new HeroHub().render(true);
+            new HeroHub({ showOnlyOwned: !game.user.isGM }).render(true);
           },
         },
       ],
@@ -51,33 +84,62 @@ Hooks.once("ready", async function () {
   });
 
   // Render hero-button on chat messages that contain rolls
+  // Use the standard 'renderChatMessage' hook which is available in 0.8+.
   Hooks.on("renderChatMessage", (message, html, data) => {
     try {
       renderHeroButtonForMessage(message, html);
     } catch (err) {
-      console.error("RagNarok's Hero Forge | renderChatMessage error", err);
+      logger.error("renderChatMessage error", err);
     }
   });
 
   // Expose API
-  game.ragnaroks = game.ragnaroks || {};
-  game.ragnaroks.heroPoints = HeroPoints;
+  game.rnk = game.rnk || {};
+  game.rnk.heroPoints = HeroPoints;
 
-  console.log("RagNarok's Hero Forge | Module registered API: game.ragnaroks.heroPoints");
+  logger.debug("Module registered API: game.rnk.heroPoints");
 
   // Initialize integrations
   try {
     registerMidiQOLIntegration();
     registerMATTIntegration();
     registerMATTAdapter();
+    registerCoreRollIntegration();
     registerActorTracker();
+    registerSceneTrackerUI();
   } catch (err) {
-    console.warn("RagNarok's Hero Forge | midiQOL integration failed to initialize", err);
+    logger.warn("midiQOL integration failed to initialize", err);
   }
+
+  registerHeroSpendOverlay();
+
+  // Ensure the sidebar button script is loaded (fallback if esmodules didn't include or ran in a different order)
+  try {
+    import('./ui/sidebar-button.js').then(() => {
+      logger.debug('Sidebar button module imported (fallback)');
+    }).catch(err => {
+      logger.warn("Sidebar button import failed:", err);
+    });
+  } catch (err) {
+    logger.warn('Sidebar button dynamic import failed', err);
+  }
+
+  // Diagnostic: check loaded template path (helps catch installed folder <> module.id mismatches)
+  try {
+    const testTemplate = 'modules/rnk-hero-forge/templates/hub.hbs';
+    fetch(testTemplate, { method: 'HEAD' }).then(resp => {
+      if (!resp.ok) {
+        logger.warn(`Template fetch failed for ${testTemplate} (status ${resp.status}) — this often means the installed folder name does not match module id. Check the modules folder and rename the installed folder to exactly 'rnk-hero-forge'.`);
+        ui.notifications?.warn?.("RNK Hero Forge: Template fetch failed. If you see 404/ENOENT errors, check that the installed module folder name matches 'rnk-hero-forge' and restart Foundry.");
+      }
+    }).catch(e => {
+      logger.warn('Failed to perform template fetch check', e);
+    });
+  } catch (err) { /* ignore */ }
 });
 
 // Provide a small hook others can listen for to apply hero bonuses for integrations like midiQOL
-Hooks.on("ragnaroks-hero-forge.applyHeroBonus", (payload) => {
+Hooks.on("rnk-hero-forge.applyHeroBonus", (payload) => {
   // payload: {message, actor, points, bonus}
-  console.log("RagNarok's Hero Forge | applyHeroBonus", payload);
+  logger.debug('applyHeroBonus', payload);
 });

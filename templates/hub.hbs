@@ -1,26 +1,87 @@
-<div class="hero-hub">
-  <h2>RagNarok's Hero Forge</h2>
-  <div class="hub-legend">Black / Red theme · GM tools</div>
-  <table class="hero-table">
-    <thead>
-      <tr><th>Actor</th><th>Current</th><th>Max</th><th>Actions</th></tr>
-    </thead>
-    <tbody>
-      {{#each actors}}
-        <tr>
-          <td class="actor-cell"><img src="{{img}}"/> {{name}}</td>
-          <td>{{current}}</td>
-          <td>{{max}}</td>
-          <td>
-            <button class="hp-add" data-actor-id="{{id}}">+1</button>
-            <button class="hp-spend" data-actor-id="{{id}}">Spend</button>
-            <button class="hp-set-max" data-actor-id="{{id}}">Set Max</button>
-          </td>
-        </tr>
-      {{/each}}
-    </tbody>
-  </table>
-  <div style="margin:10px">
-    <button class="hp-grant-all">Grant configured amount to all players</button>
+<div class="hero-hub hero-hub-theme" data-filter="all">
+  <header class="hub-header-compact">
+    <div class="hub-brand">
+      <img src="modules/rnk-hero-forge/assets/rnk-codex.jpg" alt="RNK Logo" class="hub-logo-small" />
+      <div class="hub-title-row">
+        <h2>{{localize "rnk-hero-forge.hubTitle"}}</h2>
+        <div class="hub-stats-pills">
+          <div class="stat-pill" title="{{localize "rnk-hero-forge.totalPoints"}}">
+            <i class="fas fa-coins"></i> <span>{{totals.totalCurrent}}</span> <span class="sub">/ {{totals.totalMax}}</span>
+          </div>
+          <div class="stat-pill" title="{{localize "rnk-hero-forge.utilization"}}">
+            <i class="fas fa-chart-pie"></i> <span>{{totals.percent}}%</span>
+          </div>
+          <div class="stat-pill" title="{{localize "rnk-hero-forge.atCap"}}">
+            <i class="fas fa-battery-full"></i> <span>{{totals.atCapCount}}</span>
+          </div>
+          <div class="stat-pill warning" title="{{localize "rnk-hero-forge.needsBoost"}}">
+            <i class="fas fa-exclamation-circle"></i> <span>{{totals.zeroCount}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="hub-controls-compact">
+      <div class="hub-filter-tabs">
+        <button class="filter-tab is-active" data-hub-filter="all">{{localize "rnk-hero-forge.filter.all"}}</button>
+        <button class="filter-tab" data-hub-filter="needs">{{localize "rnk-hero-forge.filter.needs"}}</button>
+        <button class="filter-tab" data-hub-filter="full">{{localize "rnk-hero-forge.filter.full"}}</button>
+      </div>
+      <div class="hub-search-compact">
+        <i class="fas fa-search"></i>
+        <input type="search" placeholder="{{localize "rnk-hero-forge.searchPlaceholder"}}" data-hub-search />
+      </div>
+      {{#if isGM}}
+        <button class="icon-btn action-grant-all" title="{{localize "rnk-hero-forge.grantAll"}}"><i class="fas fa-gift"></i></button>
+      {{/if}}
+    </div>
+  </header>
+
+  <div class="hero-list-header">
+    <span class="col-hero">Hero</span>
+    <span class="col-progress">Points</span>
+    <span class="col-actions">Actions</span>
   </div>
+
+  <section class="hero-list-container" aria-live="polite">
+    {{#if actors.length}}
+      {{#each actors}}
+        <div class="hero-row{{#if isEmpty}} needs-points{{/if}}{{#if isAtCap}} at-cap{{/if}}" data-actor-id="{{id}}" data-name="{{name}}" data-empty="{{#if isEmpty}}true{{else}}false{{/if}}" data-full="{{#if isAtCap}}true{{else}}false{{/if}}" data-pending="{{pendingBonus}}" data-current="{{current}}" data-max="{{max}}">
+          
+          <div class="hero-col-main">
+            <div class="hero-avatar-small">
+              <img src="{{img}}" alt="{{name}}" loading="lazy" onerror="this.onerror=null;this.src='icons/svg/mystery-man.svg'" />
+              {{#if pendingBonus}}<span class="badge-pending-dot" title="Pending Bonus: +{{pendingBonus}}"></span>{{/if}}
+            </div>
+            <div class="hero-info">
+              <div class="hero-name">{{name}}</div>
+              <div class="hero-owner">{{ownerLabel}}</div>
+            </div>
+          </div>
+
+          <div class="hero-col-progress">
+            <div class="progress-compact">
+              <div class="progress-bar" style="width: {{fillPercent}}%;"></div>
+            </div>
+            <div class="progress-text">
+              <span class="curr">{{current}}</span><span class="sep">/</span><span class="max">{{max}}</span>
+            </div>
+          </div>
+
+          <div class="hero-col-actions">
+            <button class="action-icon-btn action-add" data-actor-id="{{id}}" title="Add Point"><i class="fas fa-plus"></i></button>
+            <button class="action-pill-btn action-spend" data-actor-id="{{id}}" title="Spend & Roll"><i class="fas fa-dice-d20"></i> Roll</button>
+            {{#if canEdit}}
+              <button class="action-icon-btn action-set-max" data-actor-id="{{id}}" title="Config"><i class="fas fa-cog"></i></button>
+            {{/if}}
+          </div>
+
+        </div>
+      {{/each}}
+    {{else}}
+      <div class="hero-empty-state" data-empty-state="initial">No heroes available.</div>
+    {{/if}}
+    <div class="hero-empty-state hidden" data-empty-state="filters">No matches found.</div>
+  </section>
 </div>
+

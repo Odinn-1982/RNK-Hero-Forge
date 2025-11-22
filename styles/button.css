@@ -1,7 +1,8 @@
-.ragnaroks-hero-button-wrapper { display:inline-block; margin-left:8px }
-.ragnaroks-use-hero { background: #c30000; color: #fff; border: 0; padding: 4px 8px; border-radius: 4px }
-.ragnaroks-use-hero:hover { background: #ff3333 }
-.ragnaroks-no-hero { color: #888; font-size: 0.85em }
-.ragnaroks-hero-bonus { margin-top:6px; padding:6px; background:#111; border-left:4px solid #c30000; color:#f1f1f1 }
-.ragnaroks-hero-attached { display:inline-block; margin-left:8px; padding:2px 6px; background:#2b0000; color:#fff; border-radius:4px }
-.ragnaroks-hero-button-wrapper.disabled .ragnaroks-use-hero { opacity:0.5; pointer-events:none }
+.rnk-hero-btn { display:flex; justify-content:flex-end; margin-top:6px }
+.rnk-hero-button-wrapper { display:inline-block; }
+.rnk-use-hero { background: #ff0000; color: #000; border: 2px solid #fff; padding: 6px 12px; border-radius: 4px; font-weight: 700; cursor: pointer }
+.rnk-use-hero:hover { background: #ffff00; color: #000; box-shadow: 0 0 8px #ffff00 }
+.rnk-no-hero { color: #888; font-size: 0.85em }
+.rnk-hero-bonus { margin-top:6px; padding:6px; background:#000; border-left:4px solid #ff0000; color:#fff; font-weight: 700 }
+.rnk-hero-attached { display:inline-block; margin-left:8px; padding:2px 6px; background:#000; color:#fff; border: 2px solid #ff0000; border-radius:4px; font-weight: 700 }
+.rnk-hero-button-wrapper.disabled .rnk-use-hero { opacity:0.5; pointer-events:none }

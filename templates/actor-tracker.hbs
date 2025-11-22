@@ -1,16 +1,20 @@
-<div class="ragnaroks-actor-tracker">
-  <div class="ragnaroks-actor-tracker-inner">
-    <div class="ragnaroks-actor-name">{{name}}</div>
-    <div class="ragnaroks-actor-hp-dots">
+<div class="rnk-actor-tracker">
+  <div class="rnk-actor-tracker-inner">
+    <div class="rnk-actor-name">{{name}}</div>
+    <div class="rnk-actor-hp-dots">
       {{#each points}}
         <span class="hp-dot {{#if filled}}filled{{else}}empty{{/if}}" title="{{#if filled}}Hero Point{{else}}Empty{{/if}}"></span>
       {{/each}}
     </div>
-    <div class="ragnaroks-actor-controls">
-      {{#if canEdit}}
-        <button class="ragnaroks-hp-add" data-actor-id="{{actorId}}">+ Add</button>
-        <button class="ragnaroks-hp-spend" data-actor-id="{{actorId}}">Spend</button>
-        <button class="ragnaroks-hp-set-max" data-actor-id="{{actorId}}">Set Max</button>
+    <div class="rnk-actor-controls">
+      {{#if canManage}}
+        <button class="rnk-hp-add" data-actor-id="{{actorId}}">{{localize "rnk-hero-forge.actorTracker.add"}}</button>
+      {{/if}}
+      {{#if canSpend}}
+        <button class="rnk-hp-spend" data-actor-id="{{actorId}}">{{localize "rnk-hero-forge.actorTracker.spend"}}</button>
+      {{/if}}
+      {{#if canManage}}
+        <button class="rnk-hp-set-max" data-actor-id="{{actorId}}">{{localize "rnk-hero-forge.actorTracker.setMax"}}</button>
       {{/if}}
     </div>
   </div>

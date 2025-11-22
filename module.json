@@ -1,26 +1,33 @@
 {
-  "name": "ragnaroks-hero-forge",
-  "title": "RagNarok's Hero Forge",
+  "id": "rnk-hero-forge",
+  "title": "RNK Hero Forge",
   "description": "Hero points manager: track, spend, and apply hero-point bonuses to rolls. Modular, themed GM/PC hub.",
-  "version": "0.1.0",
-  "author": "(You)",
+  "version": "0.1.1",
+  "authors": [
+    { "name": "Your Name", "email": "you@example.com", "url": "https://example.com/" }
+  ],
   "esmodules": [
-    "src/module.js"
+    "src/module.js",
+    "src/ui/sidebar-button.js"
   ],
   "styles": [
     "styles/hub.css",
     "styles/button.css",
     "styles/chat.css",
-    "styles/sheet.css"
+    "styles/sheet.css",
+    "styles/sidebar-button.css",
+    "styles/scene-tracker.css"
   ],
-  "templates": [
-    "templates/hub.hbs",
-    "templates/button.hbs"
+  
+  "manifest": "https://raw.githubusercontent.com/<github-username>/rnk-hero-forge/main/manifest.json",
+  "download": "https://github.com/<github-username>/rnk-hero-forge/releases/download/v0.1.1/rnk-hero-forge.zip",
+  "languages": [
+    { "lang": "en", "name": "English", "path": "lang/en.json" }
   ],
-  "manifest": "https://example.com/ragnaroks-hero-forge/manifest.json",
-  "download": "https://example.com/ragnaroks-hero-forge/download.zip",
-  "compatibleCoreVersion": "0.8.13",
-  "minimumCoreVersion": "0.8.0",
-  "url": "https://example.com/ragnaroks-hero-forge",
+  "compatibility": {
+    "minimum": "0.8.0",
+    "verified": "0.8.13"
+  },
+  "url": "https://github.com/<github-username>/rnk-hero-forge",
   "readme": "README.md"
 }

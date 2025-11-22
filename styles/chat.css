@@ -1,8 +1,8 @@
-.ragnaroks-hero-bonus-card { background: linear-gradient(180deg,#0f0f0f,#1b0000); color:#fff; border-left:4px solid #c30000; padding:8px; border-radius:6px; display:flex; gap:10px; align-items:flex-start }
-.ragnaroks-hero-card-header { display:flex; gap:10px; align-items:center }
-.ragnaroks-hero-card-img { width:40px; height:40px; border-radius:6px; object-fit:cover; border:2px solid rgba(255,255,255,0.04) }
-.ragnaroks-hero-card-actor { display:inline-block }
-.ragnaroks-hero-card-title { font-weight:700; color:#ffb3b3 }
-.ragnaroks-hero-card-body { font-size:0.95em; color:#f1f1f1 }
+.rnk-hero-bonus-card { background: linear-gradient(180deg,#0f0f0f,#1b0000); color:#fff; border-left:4px solid #c30000; padding:8px; border-radius:6px; display:flex; gap:10px; align-items:flex-start }
+.rnk-hero-card-header { display:flex; gap:10px; align-items:center }
+.rnk-hero-card-img { width:40px; height:40px; border-radius:6px; object-fit:cover; border:2px solid rgba(255,255,255,0.04) }
+.rnk-hero-card-actor { display:inline-block }
+.rnk-hero-card-title { font-weight:700; color:#ffb3b3 }
+.rnk-hero-card-body { font-size:0.95em; color:#f1f1f1 }
 
-.ragnaroks-hero-bonus { margin-top:6px; padding:6px; background:#111; border-left:4px solid #c30000; color:#f1f1f1 }
+.rnk-hero-bonus { margin-top:6px; padding:6px; background:#111; border-left:4px solid #c30000; color:#f1f1f1 }

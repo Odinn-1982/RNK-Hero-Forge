@@ -1,0 +1,41 @@
+/* Sidebar button styles for RNK Hero Forge */
+
+#rnk-hero-sidebar-button,
+.rnk-hero-sidebar-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  background: rgba(0, 0, 0, 0.9) !important;
+  border: 2px solid #c30000 !important;
+  margin: 2px !important;
+  border-radius: 4px !important;
+  transition: all 0.12s ease !important;
+  color: #c30000 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#rnk-hero-sidebar-button i,
+.rnk-hero-sidebar-button i { font-size: 16px; }
+
+#rnk-hero-sidebar-button:hover,
+.rnk-hero-sidebar-button.hover { background: rgba(0, 0, 0, 1) !important; color: #ff6666 !important; border-color: #ff6666 !important; transform: translateY(-1px); }
+
+#rnk-hero-sidebar-button.active { box-shadow: 0 0 8px rgba(255, 50, 50, 0.6); }
+
+#rnk-hero-sidebar-button { margin-left: -24px !important; }
+
+/* Stack container rules to match other modules */
+#custom-sidebar-buttons { display:flex !important; flex-direction:column !important; align-items:center !important; gap:6px !important; padding:4px 0 !important; width:52px !important; }
+#sidebar-tabs #custom-sidebar-buttons > *, #custom-sidebar-buttons > * { width:36px !important; height:36px !important; }

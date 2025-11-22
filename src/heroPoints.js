@@ -1,4 +1,4 @@
-const MOD = "ragnaroks-hero-forge";
+const MOD = "rnk-hero-forge";
 
 export async function get(actor) {
   if (!actor) return null;
@@ -33,6 +33,51 @@ export async function spend(actor, amount = 1) {
   const newCurrent = current - amount;
   await set(actor, { max: data.max || 0, current: newCurrent });
   return newCurrent;
+}
+
+function buildTieredRollFormula(points) {
+  const spend = Math.max(0, Math.floor(points));
+  if (spend <= 0) return null;
+  const tiers = ["1d3", "1d4", "1d6"];
+  const dice = [];
+  for (let i = 0; i < Math.min(spend, tiers.length); i += 1) {
+    dice.push(tiers[i]);
+  }
+  const remainder = spend - tiers.length;
+  if (remainder > 0) {
+    dice.push(`${remainder}d6`);
+  }
+  return dice.join(" + ");
+}
+
+export async function computeHeroBonus(points = 0, { includeRollObject = false } = {}) {
+  const spend = Math.max(0, Math.floor(points));
+  if (spend <= 0) {
+    return { bonus: 0, formula: null, roll: null };
+  }
+
+  const mode = game.settings.get(MOD, "heroMode") || "roll";
+  if (mode === "flat") {
+    const per = game.settings.get(MOD, "flatPerPoint") || 2;
+    return {
+      bonus: per * spend,
+      formula: `${spend} x ${per}`,
+      roll: null,
+    };
+  }
+
+  const formula = buildTieredRollFormula(spend);
+  if (!formula) {
+    return { bonus: 0, formula: null, roll: null };
+  }
+
+  const roll = new Roll(formula);
+  await roll.evaluate({ async: true });
+  return {
+    bonus: roll.total,
+    formula: roll.formula,
+    roll: includeRollObject ? roll : null,
+  };
 }
 
 // Store a pending bonus on the actor so integrations can apply it to the next workflow
