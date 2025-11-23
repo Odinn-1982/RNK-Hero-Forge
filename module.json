@@ -2,7 +2,7 @@
   "id": "rnk-hero-forge",
   "title": "RNK Hero Forge",
   "description": "Hero points manager: track, spend, and apply hero-point bonuses to rolls. Modular, themed GM/PC hub.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "authors": [
     { "name": "Your Name", "email": "you@example.com", "url": "https://example.com/" }
   ],
@@ -19,8 +19,8 @@
     "styles/scene-tracker.css"
   ],
   
-  "manifest": "https://raw.githubusercontent.com/<github-username>/rnk-hero-forge/main/manifest.json",
-  "download": "https://github.com/<github-username>/rnk-hero-forge/releases/download/v0.1.1/rnk-hero-forge.zip",
+  "manifest": "https://raw.githubusercontent.com/Odinn-1982/RNK-Hero-Forge/main/manifest.json",
+  "download": "https://github.com/Odinn-1982/RNK-Hero-Forge/releases/download/v0.1.2/rnk-hero-forge.zip",
   "languages": [
     { "lang": "en", "name": "English", "path": "lang/en.json" }
   ],
@@ -28,6 +28,6 @@
     "minimum": "0.8.0",
     "verified": "0.8.13"
   },
-  "url": "https://github.com/<github-username>/rnk-hero-forge",
+  "url": "https://github.com/Odinn-1982/RNK-Hero-Forge",
   "readme": "README.md"
 }

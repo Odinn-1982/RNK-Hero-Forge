@@ -289,7 +289,7 @@ export function registerSceneTrackerUI() {
   let sceneTrackerWindow = null;
 
   Hooks.on("getSceneControlButtons", (controls) => {
-    controls.push({
+    const trackerControl = {
       name: "rnk-tracker",
       title: "RNK Hero Tracker",
       icon: "fas fa-hammer",
@@ -307,7 +307,15 @@ export function registerSceneTrackerUI() {
           },
         },
       ],
-    });
+    };
+
+    if (Array.isArray(controls)) {
+      controls.push(trackerControl);
+    } else if (controls instanceof Map) {
+      controls.set(trackerControl.name, trackerControl);
+    } else if (controls && typeof controls === 'object') {
+      controls[trackerControl.name] = trackerControl;
+    }
   });
 
   Hooks.on("ready", () => {

@@ -390,12 +390,21 @@ export class HeroHub extends ApplicationBase {
     const isGM = game.user.isGM;
 
     let actors;
-    if (this.showOnlyOwned && !isGM) {
-      actors = game.actors.contents.filter((a) => a.isOwner);
-    } else if (isGM) {
-      actors = game.actors.contents.filter((a) => (a.type === "character" || a.data?.type === "character" || a.hasPlayerOwner));
+    if (!isGM) {
+      // Non-GM users should only see their assigned character when opening the Hub.
+      // Fall back to owned actors if no assigned character exists.
+      const myCharId = game.user?.character?.id ?? null;
+      if (myCharId) {
+        const actorDoc = game.actors.get(myCharId);
+        actors = actorDoc ? [actorDoc] : game.actors.contents.filter((a) => a.isOwner);
+      } else if (this.showOnlyOwned) {
+        actors = game.actors.contents.filter((a) => a.isOwner);
+      } else {
+        actors = game.actors.contents.filter((a) => a.isOwner);
+      }
     } else {
-      actors = game.actors.contents.filter((a) => a.isOwner);
+      // GM: show character actors and any with player owners
+      actors = game.actors.contents.filter((a) => (a.type === "character" || a.data?.type === "character" || a.hasPlayerOwner));
     }
 
     function extractImageUrl(value) {

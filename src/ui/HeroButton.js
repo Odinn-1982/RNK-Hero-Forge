@@ -31,13 +31,17 @@ export async function renderHeroButtonForMessage(message, html) {
   });
 
   // Remove any existing hero button for this message before inserting a fresh one
-  html.querySelectorAll('.rnk-hero-btn').forEach((node) => node.remove());
+  // html is a jQuery object
+  const root = html[0];
+  if (!root) return;
+
+  root.querySelectorAll('.rnk-hero-btn').forEach((node) => node.remove());
 
   const buttonWrapper = document.createElement('div');
   buttonWrapper.className = 'rnk-hero-btn';
   buttonWrapper.innerHTML = buttonHtml;
 
-  const contentArea = html.querySelector('.message-content') || html;
+  const contentArea = root.querySelector('.message-content') || root;
   contentArea.appendChild(buttonWrapper);
 
   // Attach click handler

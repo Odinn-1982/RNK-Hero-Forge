@@ -63,8 +63,7 @@ Hooks.once("ready", async function () {
 
   // Create a simple control button in the UI
   Hooks.on("getSceneControlButtons", (controls) => {
-    // Add under token controls for convenience
-    controls.push({
+    const heroControl = {
       name: "hero-forge",
       title: "RNK Hero Forge",
       icon: "fas fa-hammer",
@@ -80,7 +79,15 @@ Hooks.once("ready", async function () {
           },
         },
       ],
-    });
+    };
+
+    if (Array.isArray(controls)) {
+      controls.push(heroControl);
+    } else if (controls instanceof Map) {
+      controls.set(heroControl.name, heroControl);
+    } else if (controls && typeof controls === 'object') {
+      controls[heroControl.name] = heroControl;
+    }
   });
 
   // Render hero-button on chat messages that contain rolls

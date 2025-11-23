@@ -119,7 +119,15 @@ function initializeHeroSidebarButton() {
     button.addEventListener('mouseenter', () => button.classList.add('hover'));
     button.addEventListener('mouseleave', () => button.classList.remove('hover'));
 
-    // Place button - attempt recommended anchors first
+    // Always use the shared stack for consistency
+    const stack = getSidebarButtonStack();
+    if (stack) {
+      stack.appendChild(button);
+      log('Hero sidebar button appended to shared stack.');
+      return true;
+    }
+
+    // Fallback: Place button - attempt recommended anchors first
     const anchors = [
       'rnk-mark-floating-launcher',
       'rnk-mark-sidebar-button',
@@ -139,14 +147,6 @@ function initializeHeroSidebarButton() {
         log(`Placed hero button after ${a}`);
         return true;
       }
-    }
-
-    // Use stack
-    const stack = getSidebarButtonStack();
-    if (stack) {
-      stack.appendChild(button);
-      log('Hero sidebar button appended to shared stack.');
-      return true;
     }
 
     const tabs = document.querySelector(SIDEBAR_SELECTOR);

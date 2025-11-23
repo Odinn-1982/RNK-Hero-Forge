@@ -84,6 +84,14 @@ export function registerSettings() {
     default: false,
   });
 
+  game.settings.register(mod, "overlayPosition", {
+    name: "Overlay Position",
+    scope: "client",
+    config: false,
+    type: Object,
+    default: { top: 100, left: 100 },
+  });
+
   const presetChoices = getThemePresetChoices();
   game.settings.register(mod, "hubThemePreset", {
     name: "Hero Hub Theme Preset",
