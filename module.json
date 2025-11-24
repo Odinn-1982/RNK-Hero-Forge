@@ -21,6 +21,7 @@
   
   "manifest": "https://raw.githubusercontent.com/Odinn-1982/RNK-Hero-Forge/main/manifest.json",
   "download": "https://github.com/Odinn-1982/RNK-Hero-Forge/releases/download/v0.1.2/rnk-hero-forge.zip",
+  "patreon": "https://patreon.com/RagNaroks?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink",
   "languages": [
     { "lang": "en", "name": "English", "path": "lang/en.json" }
   ],

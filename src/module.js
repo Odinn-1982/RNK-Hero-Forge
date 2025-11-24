@@ -24,6 +24,17 @@ Hooks.once("init", async function () {
     "modules/rnk-hero-forge/templates/actor-tracker.hbs",
     "modules/rnk-hero-forge/templates/scene-tracker.hbs",
   ]);
+  // Register helper for templates to use localized strings safely
+  try {
+    Handlebars.registerHelper('localize', (key) => {
+      try { return (game?.i18n && game.i18n.localize) ? game.i18n.localize(key) : key; } catch (e) { return key; }
+    });
+    Handlebars.registerHelper('format', (key, options) => {
+      try { return (game?.i18n && game.i18n.format) ? game.i18n.format(key, options.hash || {}) : key; } catch (e) { return key; }
+    });
+  } catch (e) {
+    logger.warn('Failed to register Handlebars helpers localize/format', e);
+  }
 });
 
 Hooks.once("ready", async function () {

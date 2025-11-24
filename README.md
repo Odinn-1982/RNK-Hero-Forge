@@ -1,5 +1,7 @@
 # RNK Hero Forge
 
+[![Support on Patreon](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExdm56c3NvanZpOWc5MzJwaW52cXU5aXAyZ3M2ZjF1aGd4d2loM3NyciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/7ssLleBvWvESbx0BuG/giphy.gif)](https://patreon.com/RagNaroks?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink)
+
 Foundry VTT module (initial scaffold) to manage "Hero Points" for players.
 
 - Features (v0.1):
