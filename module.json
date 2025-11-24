@@ -1,34 +1,42 @@
-{
-  "id": "rnk-hero-forge",
-  "title": "RNK Hero Forge",
-  "description": "Hero points manager: track, spend, and apply hero-point bonuses to rolls. Modular, themed GM/PC hub.",
-  "version": "0.1.2",
-  "authors": [
-    { "name": "Your Name", "email": "you@example.com", "url": "https://example.com/" }
-  ],
-  "esmodules": [
-    "src/module.js",
-    "src/ui/sidebar-button.js"
-  ],
-  "styles": [
-    "styles/hub.css",
-    "styles/button.css",
-    "styles/chat.css",
-    "styles/sheet.css",
-    "styles/sidebar-button.css",
-    "styles/scene-tracker.css"
-  ],
-  
-  "manifest": "https://raw.githubusercontent.com/Odinn-1982/RNK-Hero-Forge/main/manifest.json",
-  "download": "https://github.com/Odinn-1982/RNK-Hero-Forge/releases/download/v0.1.2/rnk-hero-forge.zip",
-  "patreon": "https://patreon.com/RagNaroks?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink",
-  "languages": [
-    { "lang": "en", "name": "English", "path": "lang/en.json" }
-  ],
-  "compatibility": {
-    "minimum": "0.8.0",
-    "verified": "0.8.13"
-  },
-  "url": "https://github.com/Odinn-1982/RNK-Hero-Forge",
-  "readme": "README.md"
+﻿{
+    "id":  "rnk-hero-forge",
+    "title":  "RNK Hero Forge",
+    "description":  "Hero points manager: track, spend, and apply hero-point bonuses to rolls. Modular, themed GM/PC hub.",
+    "version":  "0.1.2",
+    "authors":  [
+                    {
+                        "name":  "Your Name",
+                        "email":  "you@example.com",
+                        "url":  "https://example.com/"
+                    }
+                ],
+    "esmodules":  [
+                      "src/module.js",
+                      "src/ui/sidebar-button.js",
+                      "scripts/rnk-localize-helper.js"
+                  ],
+    "styles":  [
+                   "styles/hub.css",
+                   "styles/button.css",
+                   "styles/chat.css",
+                   "styles/sheet.css",
+                   "styles/sidebar-button.css",
+                   "styles/scene-tracker.css"
+               ],
+    "manifest":  "https://raw.githubusercontent.com/Odinn-1982/RNK-Hero-Forge/main/manifest.json",
+    "download":  "https://github.com/Odinn-1982/RNK-Hero-Forge/releases/download/v0.1.2/rnk-hero-forge.zip",
+    "patreon":  "https://patreon.com/RagNaroks?utm_medium=unknown\u0026utm_source=join_link\u0026utm_campaign=creatorshare_creator\u0026utm_content=copyLink",
+    "languages":  [
+                      {
+                          "lang":  "en",
+                          "name":  "English",
+                          "path":  "lang/en.json"
+                      }
+                  ],
+    "compatibility":  {
+                          "minimum":  "0.8.0",
+                          "verified":  "0.8.13"
+                      },
+    "url":  "https://github.com/Odinn-1982/RNK-Hero-Forge",
+    "readme":  "README.md"
 }
