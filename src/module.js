@@ -141,17 +141,6 @@ Hooks.once("ready", async function () {
   registerHeroSpendOverlay();
   registerHotbarButton();
 
-  // Ensure the sidebar button script is loaded (fallback if esmodules didn't include or ran in a different order)
-  try {
-    import('./ui/sidebar-button.js').then(() => {
-      logger.debug('Sidebar button module imported (fallback)');
-    }).catch(err => {
-      logger.warn("Sidebar button import failed:", err);
-    });
-  } catch (err) {
-    logger.warn('Sidebar button dynamic import failed', err);
-  }
-
   // Diagnostic: check loaded template path (helps catch installed folder <> module.id mismatches)
   try {
     const testTemplate = 'modules/rnk-hero-forge/templates/hub.hbs';
