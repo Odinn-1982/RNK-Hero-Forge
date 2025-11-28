@@ -24,14 +24,6 @@ function decorateHotbarSlot(slot) {
     slot.appendChild(icon);
   }
 
-  let label = slot.querySelector(".rnk-hero-hotbar-label");
-  if (!label) {
-    label = document.createElement("span");
-    label.className = "rnk-hero-hotbar-label";
-    label.textContent = game?.i18n?.localize?.("rnk-hero-forge.sidebar.openHub") || "Hero Forge";
-    slot.appendChild(label);
-  }
-
   const key = slot.querySelector(".key");
   if (key) {
     key.classList.add("rnk-hero-hotbar-key");
