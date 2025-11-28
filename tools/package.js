@@ -24,7 +24,8 @@ const include = [
   'src',
   'assets',
   'macros',
-  'docs'
+  'docs',
+  'scripts'
 ];
 
 (async function run() {
