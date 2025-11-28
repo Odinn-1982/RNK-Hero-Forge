@@ -4,7 +4,7 @@ import { openHeroHub, applyHeroHubTooltip } from "./hero-hub-launcher.js";
 const MODULE_ID = "rnk-hero-forge";
 const HOTBAR_SLOT = 4;
 const HOTBAR_SLOT_SELECTOR = `#hotbar .slot[data-slot="${HOTBAR_SLOT}"]`;
-const ICON_CLASS = "fas fa-cog";
+const ICON_CLASS = "fas fa-hammer";
 
 function decorateHotbarSlot(slot) {
   if (!slot) return;
