@@ -1,5 +1,7 @@
 import { DEFAULT_THEME_PRESET, THEME_SLOTS, applyCurrentTheme, getThemePresetChoices, getDefaultColorForSlot } from "./theme.js";
 
+const HERO_ROLL_BUTTON_TOGGLE_HOOK = 'rnk-hero-forge.heroRollButtonToggle';
+
 export function registerSettings() {
   const mod = "rnk-hero-forge";
   game.settings.register(mod, "defaultMax", {
@@ -82,6 +84,34 @@ export function registerSettings() {
     config: true,
     type: Boolean,
     default: false,
+  });
+
+  game.settings.register(mod, 'enableChatHeroButton', {
+    name: game.i18n.localize('rnk-hero-forge.settings.enableChatHeroButton.name'),
+    hint: game.i18n.localize('rnk-hero-forge.settings.enableChatHeroButton.hint'),
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+  });
+
+  game.settings.register(mod, 'enableHeroRollButton', {
+    name: 'Enable Hero Roll Sidebar Button',
+    hint: 'Show or hide the Hero Roll button in the sidebar.',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: (value) => Hooks.call(HERO_ROLL_BUTTON_TOGGLE_HOOK, !!value),
+  });
+
+  game.settings.register(mod, 'enableNativeRollIntegration', {
+    name: game.i18n.localize('rnk-hero-forge.settings.enableNativeRollIntegration.name'),
+    hint: game.i18n.localize('rnk-hero-forge.settings.enableNativeRollIntegration.hint'),
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
   });
 
   game.settings.register(mod, "overlayPosition", {

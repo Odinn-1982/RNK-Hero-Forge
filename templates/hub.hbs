@@ -33,6 +33,13 @@
       </div>
       {{#if isGM}}
         <button class="icon-btn action-grant-all" title="{{localize "rnk-hero-forge.grantAll"}}"><i class="fas fa-gift"></i></button>
+        <div class="hub-toggle-group">
+          <label class="hub-toggle" title="Toggle Hero Roll Sidebar Button">
+            <input type="checkbox" class="toggle-hero-roll-button" {{#if heroRollButtonEnabled}}checked{{/if}} />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">Hero Roll Btn</span>
+          </label>
+        </div>
       {{/if}}
     </div>
   </header>

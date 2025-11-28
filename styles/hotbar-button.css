@@ -1,0 +1,44 @@
+#hotbar .slot.rnk-hero-hotbar-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: rgba(255, 111, 97, 0.08);
+  border: 2px solid rgba(255, 111, 97, 0.35);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: #ffb6b6;
+  pointer-events: auto;
+}
+
+#hotbar .slot.rnk-hero-hotbar-slot:hover {
+  background: rgba(255, 111, 97, 0.18);
+  border-color: rgba(255, 111, 97, 0.8);
+}
+
+#hotbar .slot.rnk-hero-hotbar-slot .key {
+  display: none;
+}
+
+#hotbar .slot.rnk-hero-hotbar-slot .rnk-hero-hotbar-icon {
+  font-size: 1.1rem;
+  color: #ff8f6f;
+}
+
+#hotbar .slot.rnk-hero-hotbar-slot .rnk-hero-hotbar-label {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.55rem;
+  color: #fff;
+}
+
+#hotbar .slot.rnk-hero-hotbar-slot .rnk-hero-hotbar-label::first-letter {
+  font-size: 0.7rem;
+}
+
+/* Ensure the slot doesn’t show the default glyph misalignment */
+#hotbar .slot.rnk-hero-hotbar-slot::after {
+  display: none;
+}

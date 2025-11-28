@@ -1,4 +1,5 @@
 ﻿import { logger } from "../logger.js";
+import { openHeroHub, applyHeroHubTooltip } from "./hero-hub-launcher.js";
 const MODULE_ID = 'rnk-hero-forge';
 const BUTTON_ID = 'rnk-hero-sidebar-button';
 const BUTTON_CLASS = 'rnk-hero-sidebar-button';
@@ -67,53 +68,32 @@ function getSidebarButtonStack() {
 // Debug
 console.log(`${MODULE_ID} sidebar-button loaded`);
 
-async function openHeroHub(button) {
-  try {
-    // dynamic import
-    const mod = await import('./HeroHub.js');
-    const Hub = mod.HeroHub;
-    const h = new Hub({ showOnlyOwned: !game.user.isGM });
-    try {
-      await h.render(true);
-    } catch (err) {
-      // Enhance error with diagnostic advice
-      console.error(`${MODULE_ID} | Hero Hub render failed`, err);
-      ui.notifications?.error?.("RNK Hero Forge: Failed to render the Hub UI. If you see an ENOENT error for templates/hub.hbs, ensure the installed module folder name exactly matches the module id 'rnk-hero-forge' and then restart Foundry.");
-      return;
-    }
-    window.rnkHeroHub = h;
-    // add an active class
-    try { button.classList.add('active'); } catch (e) { }
-    // wrap close to remove active class
-    const origClose = h.close.bind(h);
-    h.close = async function (options) { await origClose(options); try { button.classList.remove('active'); } catch (e) { } };
-  } catch (err) {
-    console.error(`${MODULE_ID} | Failed to open Hero Hub`, err);
-    ui.notifications?.error?.("RNK Hero Forge failed to open.");
-  }
+function ensureTooltip(button) {
+  applyHeroHubTooltip(button);
 }
 
 function initializeHeroSidebarButton() {
   log('Initializing sidebar button...');
   try {
     const existing = document.getElementById(BUTTON_ID);
-    if (existing) existing.remove();
+    if (existing) {
+      existing.style.display = '';
+      return true;
+    }
 
     const button = document.createElement('div');
     button.id = BUTTON_ID;
     button.className = BUTTON_CLASS;
-    const localizedTitle = game?.i18n?.localize?.('rnk-hero-forge.sidebar.openHub') || 'Hero Forge';
-    button.title = localizedTitle;
     button.innerHTML = `<i class="fas fa-hammer" style="font-size: 16px; pointer-events: none;"></i>`;
     button.setAttribute('role', 'button');
-    button.setAttribute('aria-label', 'Hero Forge');
+    ensureTooltip(button);
 
     button.addEventListener('click', (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
       button.style.transform = 'scale(0.94)';
       setTimeout(() => button.style.transform = '', 120);
-      openHeroHub(button);
+      openHeroHub(button, { showOnlyOwned: !game.user.isGM });
     });
 
     button.addEventListener('mouseenter', () => button.classList.add('hover'));

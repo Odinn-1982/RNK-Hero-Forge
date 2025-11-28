@@ -1,6 +1,6 @@
 {
   "name": "rnk-hero-forge",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "Foundry VTT module scaffold validation scripts",
   "type": "module",
   "scripts": {

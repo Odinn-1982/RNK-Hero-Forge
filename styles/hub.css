@@ -157,6 +157,72 @@
   color: #fff;
 }
 
+.icon-btn.is-active {
+  background: var(--rnk-hub-accent-primary, #ff6f61);
+  border-color: var(--rnk-hub-accent-primary, #ff6f61);
+  color: #fff;
+}
+
+.icon-btn.is-active:hover {
+  background: var(--rnk-hub-accent-secondary, #ff8a80);
+  border-color: var(--rnk-hub-accent-secondary, #ff8a80);
+}
+
+/* Toggle Switch Styles */
+.hub-toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hub-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.hub-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-slider {
+  width: 36px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+}
+
+.hub-toggle input:checked + .toggle-slider {
+  background: var(--rnk-hub-accent-primary, #ff6f61);
+}
+
+.hub-toggle input:checked + .toggle-slider::before {
+  transform: translateX(16px);
+}
+
+.toggle-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}
+
 /* List Header */
 .hero-list-header {
   display: flex;

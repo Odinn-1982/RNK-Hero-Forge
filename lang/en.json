@@ -28,7 +28,7 @@
   "rnk-hero-forge.chat.spendTitle": "{{speakerName}} spent {{points}} hero point{{#unless isOne}}s{{/unless}}",
   "rnk-hero-forge.chat.rolled": "Rolled",
   "rnk-hero-forge.chat.bonus": "Bonus",
-  "rnk-hero-forge.button.useHero": "Use Hero Point ({{current}})",
+  "rnk-hero-forge.button.useHero": "Use Hero Point",
   "rnk-hero-forge.button.noHero": "No Hero Points",
   "rnk-hero-forge.dialog.addPoints.title": "Add Hero Points — {{name}}",
   "rnk-hero-forge.dialog.spendPoints.title": "Spend Hero Points — {{name}}",
@@ -43,5 +43,11 @@
   "rnk-hero-forge.notification.applied": "{{name}} applies +{{bonus}} hero bonus ({{label}})",
   "rnk-hero-forge.notification.spendError": "Unable to resolve hero point spend.",
   "rnk-hero-forge.notification.couldNotApply": "Could not deterministically apply hero bonus for {{name}}. Check logs.",
-  "rnk-hero-forge.sidebar.openHub": "Open RNK Hero Hub"
+  "rnk-hero-forge.sidebar.openHub": "Open RNK Hero Hub",
+  "rnk-hero-forge.settings.enableChatHeroButton.name": "Enable Chat Hero Button",
+  "rnk-hero-forge.settings.enableChatHeroButton.hint": "Show the 'Use Hero Point' button on chat messages that contain rolls.",
+  "rnk-hero-forge.settings.enableNativeRollIntegration.name": "Enable Roll Prompt Integration",
+  "rnk-hero-forge.settings.enableNativeRollIntegration.hint": "When enabled, a hero point spending prompt appears before d20 rolls (ability checks, saves, skills, attacks).",
+  "rnk-hero-forge.hub.toggleChatButton": "Toggle Hero Button on Chat Messages",
+  "rnk-hero-forge.hub.toggleNativeIntegration": "Toggle Hero Point Prompt on Rolls"
 }

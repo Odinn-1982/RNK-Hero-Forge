@@ -12,6 +12,7 @@ import { registerSceneTrackerUI } from "./ui/SceneTrackerUI.js";
 import { applyCurrentTheme } from "./theme.js";
 import { registerHeroSpendOverlay } from "./ui/HeroSpendOverlay.js";
 import { logger } from './logger.js';
+import { registerHotbarButton } from './ui/hotbar-button.js';
 
 Hooks.once("init", async function () {
   logger.log("Initializing");
@@ -102,7 +103,15 @@ Hooks.once("ready", async function () {
   });
 
   // Render hero-button on chat messages that contain rolls
-  // Use the standard 'renderChatMessage' hook which is available in 0.8+.
+  // V12+ uses renderChatMessageHTML with HTMLElement, V11 uses renderChatMessage with jQuery
+  Hooks.on("renderChatMessageHTML", (message, html, data) => {
+    try {
+      renderHeroButtonForMessage(message, html);
+    } catch (err) {
+      logger.error("renderChatMessageHTML error", err);
+    }
+  });
+  // Fallback for V11 compatibility
   Hooks.on("renderChatMessage", (message, html, data) => {
     try {
       renderHeroButtonForMessage(message, html);
@@ -130,6 +139,7 @@ Hooks.once("ready", async function () {
   }
 
   registerHeroSpendOverlay();
+  registerHotbarButton();
 
   // Ensure the sidebar button script is loaded (fallback if esmodules didn't include or ran in a different order)
   try {

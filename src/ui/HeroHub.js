@@ -474,11 +474,24 @@ export class HeroHub extends ApplicationBase {
     totals.average = sorted.length ? Math.round((totals.totalCurrent / sorted.length) * 10) / 10 : 0;
     totals.percent = totals.totalMax > 0 ? Math.round((totals.totalCurrent / totals.totalMax) * 100) : 0;
 
+    // Get current toggle states for GM controls
+    const chatButtonEnabled = game.settings.get('rnk-hero-forge', 'enableChatHeroButton');
+    const nativeIntegrationEnabled = game.settings.get('rnk-hero-forge', 'enableNativeRollIntegration');
+    let heroRollButtonEnabled = true;
+    try {
+      heroRollButtonEnabled = game.settings.get('rnk-hero-forge', 'enableHeroRollButton');
+    } catch (e) {
+      heroRollButtonEnabled = true;
+    }
+
     return {
       actors: sorted,
       isGM: game.user.isGM,
       totals,
       viewingOwnedOnly: this.showOnlyOwned && !isGM,
+      chatButtonEnabled,
+      nativeIntegrationEnabled,
+      heroRollButtonEnabled,
     };
   }
 
@@ -559,6 +572,24 @@ export class HeroHub extends ApplicationBase {
         }
         ui.notifications.info(game.i18n.format('rnk-hero-forge.notification.granted', { grant, count: targets.length }));
         this.render();
+      });
+    }
+
+    // Toggle switch for Hero Roll Button setting
+    const toggleHeroRollCheckbox = root.querySelector('.toggle-hero-roll-button');
+    if (toggleHeroRollCheckbox) {
+      toggleHeroRollCheckbox.addEventListener('change', async () => {
+        if (!game.user.isGM) return;
+        const newValue = toggleHeroRollCheckbox.checked;
+        await game.settings.set('rnk-hero-forge', 'enableHeroRollButton', newValue);
+        
+        // Immediately show/hide the sidebar button
+        const sidebarBtn = document.getElementById('rnk-hero-sidebar-button');
+        if (sidebarBtn) {
+          sidebarBtn.style.display = newValue ? '' : 'none';
+        }
+        
+        ui.notifications.info(`Hero Roll Button ${newValue ? 'enabled' : 'disabled'}`);
       });
     }
 

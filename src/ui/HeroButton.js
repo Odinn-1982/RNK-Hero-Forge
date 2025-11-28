@@ -2,20 +2,29 @@ import * as HeroPoints from "../heroPoints.js";
 import { logger } from '../logger.js';
 
 export async function renderHeroButtonForMessage(message, html) {
-  // Only show for messages with rolls
-  if (!message.flags?.core?.roll) {
-    // Fallback: check for rolls array
-    if (!message.isRoll) return;
+  // Check if the chat hero button is enabled (default to true if setting not yet registered)
+  let chatButtonEnabled = true;
+  try {
+    chatButtonEnabled = game.settings.get('rnk-hero-forge', 'enableChatHeroButton');
+  } catch (e) {
+    // Setting not yet registered, default to true
+    chatButtonEnabled = true;
   }
+  if (!chatButtonEnabled) return;
 
-  // Only show to users who own the actor (GM counts as owner)
-  if (!actor?.isOwner) return;
+  // Only show for messages with rolls - check multiple ways for compatibility
+  const hasRolls = message.isRoll || message.rolls?.length > 0 || message.flags?.core?.roll;
+  if (!hasRolls) return;
 
   // Determine the actor that issued the roll (if any)
   const speaker = message.speaker || {};
   const actor = game.actors.get(speaker.actor) || null;
-  // Only render the hero button for messages linked to actor documents (do not show the button for actor-less messages)
+  
+  // Only render the hero button for messages linked to actor documents
   if (!actor) return;
+
+  // Show to users who own the actor (includes GMs)
+  if (!actor.isOwner) return;
 
   const hp = actor ? await HeroPoints.get(actor) : null;
   const hasPoints = !!(hp && hp.current > 0);
@@ -31,9 +40,12 @@ export async function renderHeroButtonForMessage(message, html) {
   });
 
   // Remove any existing hero button for this message before inserting a fresh one
-  // html is a jQuery object
-  const root = html[0];
+  // V12+ passes HTMLElement directly, V11 passes jQuery object
+  const root = html instanceof HTMLElement ? html : (html?.[0] ?? null);
   if (!root) return;
+
+  // Guard against double-rendering (both hooks may fire in some versions)
+  if (root.querySelector('.rnk-hero-btn')) return;
 
   root.querySelectorAll('.rnk-hero-btn').forEach((node) => node.remove());
 
@@ -60,35 +72,26 @@ export async function renderHeroButtonForMessage(message, html) {
         title: `Use Hero Points: ${actor.name}`,
         classes: ["rnk-hero-dialog"],
         content: `
-          <form class="rnk-hero-spend-form hero-hub-theme">
-            <div class="spend-header">
-              <div class="spend-hero-identity">
-                <span class="spend-hero-name">${actor.name}</span>
-                <div class="spend-hero-balance" title="Available Hero Points">
-                  <i class="fas fa-bolt"></i> ${maxAvailable}
-                </div>
-              </div>
-              <div class="spend-helper">${rollHelp}</div>
+          <form class="rnk-hero-spend-form">
+            <p style="margin-bottom: 10px;"><strong>${actor.name}</strong> has <strong>${maxAvailable}</strong> hero point(s) available.</p>
+            <p style="margin-bottom: 10px; font-size: 0.9em; opacity: 0.8;">${rollHelp}</p>
+            
+            <div class="form-group">
+              <label for="hp-amt">Points to Spend:</label>
+              <input id="hp-amt" type="number" min="1" max="${maxAvailable}" value="1" style="width: 60px;" />
             </div>
 
-            <div class="spend-body">
-              <div class="spend-row">
-                <label for="hp-amt">Spend Amount</label>
-                <div class="spend-input-wrapper">
-                  <input id="hp-amt" type="number" min="1" max="${maxAvailable}" value="1" />
-                </div>
-              </div>
-
-              <div class="spend-footer">
-                <label class="spend-checkbox">
-                  <input type="checkbox" id="opt-set-pending" checked/>
-                  <span>Set pending bonus (next roll)</span>
-                </label>
-                <label class="spend-checkbox">
-                  <input type="checkbox" id="opt-post-chat" checked/>
-                  <span>Post chat message</span>
-                </label>
-              </div>
+            <div class="form-group" style="margin-top: 10px;">
+              <label>
+                <input type="checkbox" id="opt-set-pending" checked />
+                Set pending bonus (applies to next roll)
+              </label>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="opt-post-chat" checked />
+                Post chat message
+              </label>
             </div>
           </form>
         `,

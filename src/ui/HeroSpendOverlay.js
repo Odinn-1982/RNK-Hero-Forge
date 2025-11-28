@@ -4,6 +4,7 @@ import { spendHeroPointsAndRoll } from "./HeroHub.js";
 const MOD = "rnk-hero-forge";
 const OVERLAY_ID = "rnk-hero-overlay";
 const BUTTON_ID = "rnk-hero-overlay-button";
+const HERO_ROLL_BUTTON_TOGGLE_HOOK = 'rnk-hero-forge.heroRollButtonToggle';
 
 import { logger } from "../logger.js";
 
@@ -22,6 +23,14 @@ function removeOverlay() {
   }
 }
 
+function isHeroRollButtonEnabled() {
+  try {
+    return !!game.settings.get(MOD, 'enableHeroRollButton');
+  } catch (err) {
+    return true;
+  }
+}
+
 function escapeLabel(text) {
   const esc = foundry.utils?.escapeHTML;
   if (typeof esc === "function") return esc(text ?? "");
@@ -37,6 +46,9 @@ function escapeLabel(text) {
 function buildOverlay() {
   try {
     removeOverlay();
+    if (!isHeroRollButtonEnabled()) {
+      return;
+    }
     // Relaxed check: allow overlay if game is ready, even if canvas isn't fully drawn yet
     if (!canShowOverlay()) {
       console.log("RNK Hero Forge | Hero overlay skipped: canShowOverlay returned false");
@@ -351,6 +363,14 @@ export function registerHeroSpendOverlay() {
   Hooks.on("updateSetting", (setting) => {
     if (setting?.namespace === MOD && setting?.key === "enablePlayersHub") {
       scheduleOverlayBuild(0);
+    }
+  });
+
+  Hooks.on(HERO_ROLL_BUTTON_TOGGLE_HOOK, (value) => {
+    if (value) {
+      scheduleOverlayBuild(0);
+    } else {
+      removeOverlay();
     }
   });
 }

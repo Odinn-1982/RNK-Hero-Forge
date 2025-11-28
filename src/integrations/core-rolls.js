@@ -45,6 +45,9 @@ function resolveActorFromRollConfig(config = {}) {
 function shouldPromptForHeroPoints(actor, rollConfig = {}, options = {}) {
   if (!actor) return false;
   if (!actor.isOwner && !game.user.isGM) return false;
+  // Check if native roll integration is enabled - if disabled, don't show the prompt
+  const nativeIntegration = game.settings.get(MOD, 'enableNativeRollIntegration');
+  if (!nativeIntegration) return false;
   const fastForward = options?.fastForward ?? rollConfig?.fastForward ?? rollConfig?.config?.fastForward;
   if (fastForward) return false;
   const skip = rollConfig?.flags?.[MOD]?.skipPrompt;
@@ -472,4 +475,214 @@ export function registerCoreRollIntegration() {
     }
     return true;
   });
+
+  // Native roll dialog integration - inject hero point controls into DND5E dialogs
+  registerNativeDialogIntegration();
+}
+
+/**
+ * Injects hero point controls directly into DND5E native roll configuration dialogs.
+ * This allows users to spend hero points from the same dialog used for advantage/disadvantage.
+ */
+function registerNativeDialogIntegration() {
+  // Hook into the DND5E roll configuration dialog rendering
+  // DND5E v3+ uses renderApplication / renderDialog hooks
+  const dialogHooks = [
+    "renderD20Roll",
+    "renderAbilityCheckConfigurationDialog", 
+    "renderSavingThrowConfigurationDialog",
+    "renderSkillCheckConfigurationDialog",
+    "renderAttackRollConfigurationDialog",
+    "renderRollConfigurationDialog",
+    "dnd5e.renderD20RollConfiguration",
+    "dnd5e.preRollAbilityCheck",
+    "dnd5e.preRollAbilitySave",
+    "dnd5e.preRollSkill",
+    "dnd5e.preRollAttack",
+    "dnd5e.preRollDamage"
+  ];
+
+  // Main hook for DND5E v3+ roll configuration dialogs
+  Hooks.on("renderApplication", async (app, html, data) => {
+    if (!game.settings.get(MOD, 'enableNativeRollIntegration')) return;
+    
+    // Check if this is a roll configuration dialog
+    const isRollConfig = app?.constructor?.name?.includes?.("Roll") || 
+                         app?.constructor?.name?.includes?.("Configuration") ||
+                         app?.options?.classes?.some?.(c => c.includes("roll") || c.includes("d20"));
+    
+    if (!isRollConfig) return;
+    
+    await injectHeroPointsIntoDialog(app, html, data);
+  });
+
+  // Hook for Foundry V12+ ApplicationV2
+  Hooks.on("renderApplicationV2", async (app, element, options) => {
+    if (!game.settings.get(MOD, 'enableNativeRollIntegration')) return;
+    
+    const isRollConfig = app?.constructor?.name?.includes?.("Roll") || 
+                         app?.constructor?.name?.includes?.("Configuration");
+    
+    if (!isRollConfig) return;
+    
+    const html = element instanceof HTMLElement ? [element] : element;
+    await injectHeroPointsIntoDialog(app, html, options);
+  });
+
+  // Hook specifically for DND5E roll dialogs
+  Hooks.on("renderDialog", async (app, html, data) => {
+    if (!game.settings.get(MOD, 'enableNativeRollIntegration')) return;
+    
+    // Check if this looks like a D20 roll dialog based on content
+    const root = html instanceof HTMLElement ? html : html?.[0];
+    if (!root) return;
+    
+    const hasD20Content = root.querySelector('.roll-mode') || 
+                          root.querySelector('[name="advantage"]') ||
+                          root.querySelector('.dialog-buttons button[data-button="normal"]') ||
+                          root.textContent?.includes?.('Advantage') ||
+                          app?.data?.title?.includes?.('Roll') ||
+                          app?.data?.title?.includes?.('Check') ||
+                          app?.data?.title?.includes?.('Save');
+    
+    if (!hasD20Content) return;
+    
+    await injectHeroPointsIntoDialog(app, html, data);
+  });
+
+  logger.log("Native dialog integration hooks registered");
+}
+
+/**
+ * Injects hero point spending controls into a roll configuration dialog.
+ */
+async function injectHeroPointsIntoDialog(app, html, data) {
+  try {
+    // Try to find the actor from the dialog context
+    const actor = app?.object?.actor || 
+                  app?.actor || 
+                  data?.actor ||
+                  app?.data?.actor ||
+                  (app?.data?.speaker?.actor ? game.actors.get(app.data.speaker.actor) : null) ||
+                  (canvas?.tokens?.controlled?.[0]?.actor) ||
+                  game.user?.character;
+    
+    if (!actor) {
+      logger.debug("No actor found for native dialog injection");
+      return;
+    }
+    
+    // Check permissions
+    if (!actor.isOwner && !game.user.isGM) return;
+    
+    // Get hero points
+    const heroPoints = await HeroPoints.get(actor).catch(() => null);
+    if (!heroPoints || heroPoints.current <= 0) return;
+    
+    const root = html instanceof HTMLElement ? html : html?.[0];
+    if (!root) return;
+    
+    // Don't inject twice
+    if (root.querySelector('.rnk-hero-native-inject')) return;
+    
+    // Find suitable injection point - look for common dialog elements
+    const injectionPoint = root.querySelector('.dialog-content') ||
+                           root.querySelector('.form-group:last-of-type') ||
+                           root.querySelector('form') ||
+                           root.querySelector('.window-content');
+    
+    if (!injectionPoint) {
+      logger.debug("No suitable injection point found in dialog");
+      return;
+    }
+    
+    // Get hero mode info for helper text
+    const heroMode = game.settings.get(MOD, "heroMode") || "roll";
+    const per = game.settings.get(MOD, "flatPerPoint") || 2;
+    const helperText = heroMode === "flat"
+      ? `+${per} per point`
+      : "1pt→1d3, 2pt→+1d4, 3+→+1d6";
+    
+    // Create the hero points injection HTML
+    const heroHtml = document.createElement('div');
+    heroHtml.className = 'rnk-hero-native-inject form-group';
+    heroHtml.innerHTML = `
+      <div class="rnk-hero-native-section" style="border-top: 1px solid var(--color-border-light-tertiary, #999); margin-top: 8px; padding-top: 8px;">
+        <label class="rnk-hero-native-label" style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+          <input type="checkbox" id="rnk-hero-use" style="margin: 0;" />
+          <i class="fas fa-bolt" style="color: gold;"></i>
+          <span>Use Hero Points</span>
+          <span class="rnk-hero-available" style="opacity: 0.7;">(${heroPoints.current}/${heroPoints.max} available)</span>
+        </label>
+        <div class="rnk-hero-native-controls" style="display: none; margin-left: 20px; margin-top: 4px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="rnk-hero-amount" style="white-space: nowrap;">Points:</label>
+            <input type="number" id="rnk-hero-amount" min="1" max="${heroPoints.current}" value="1" style="width: 50px;" />
+            <span class="rnk-hero-helper" style="font-size: 0.85em; opacity: 0.8;">${helperText}</span>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Insert after last form-group or at end of form
+    const lastFormGroup = injectionPoint.querySelector('.form-group:last-of-type');
+    if (lastFormGroup && lastFormGroup.parentNode === injectionPoint) {
+      lastFormGroup.after(heroHtml);
+    } else {
+      injectionPoint.appendChild(heroHtml);
+    }
+    
+    // Add toggle behavior
+    const checkbox = heroHtml.querySelector('#rnk-hero-use');
+    const controls = heroHtml.querySelector('.rnk-hero-native-controls');
+    
+    checkbox?.addEventListener('change', () => {
+      if (controls) {
+        controls.style.display = checkbox.checked ? 'block' : 'none';
+      }
+    });
+    
+    // Store actor reference for later use
+    heroHtml.dataset.actorId = actor.id;
+    
+    // Hook into the dialog's button clicks to capture hero point selection
+    const dialogButtons = root.querySelectorAll('.dialog-buttons button, button[data-button]');
+    dialogButtons.forEach(btn => {
+      const originalClick = btn.onclick;
+      btn.onclick = async (event) => {
+        // Check if hero points should be used
+        const useHero = root.querySelector('#rnk-hero-use')?.checked;
+        const amount = parseInt(root.querySelector('#rnk-hero-amount')?.value, 10) || 0;
+        
+        if (useHero && amount > 0) {
+          try {
+            // Set pending bonus that will be picked up by the d20Roll wrapper
+            const bonusData = await HeroPoints.computeHeroBonus(amount, { includeRollObject: true });
+            await HeroPoints.spend(actor, amount);
+            await HeroPoints.setPendingBonus(actor, bonusData.bonus, {
+              points: amount,
+              formula: bonusData.formula,
+              rollJSON: bonusData.roll?.toJSON() ?? null,
+              postChat: true,
+              label: app?.data?.title || app?.title || "d20 Roll"
+            });
+            logger.debug("Set pending hero bonus from native dialog", { actor: actor.name, amount, bonus: bonusData.bonus });
+          } catch (err) {
+            logger.warn("Failed to set pending hero bonus from native dialog", err);
+            ui.notifications?.error?.(err.message ?? "Unable to spend hero points");
+          }
+        }
+        
+        // Call original handler
+        if (originalClick) {
+          return originalClick.call(btn, event);
+        }
+      };
+    });
+    
+    logger.debug("Injected hero points into native dialog", { actor: actor.name, heroPoints });
+    
+  } catch (err) {
+    logger.warn("Failed to inject hero points into native dialog", err);
+  }
 }
